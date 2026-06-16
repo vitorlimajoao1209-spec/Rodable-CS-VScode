@@ -152,7 +152,7 @@ function init() {
     sun.position.set(120, 220, 150); scene.add(sun);
 
     const loader = new THREE.GLTFLoader();
-    loader.load('assets/models/dust2.glb', (gltf) => {
+    loader.load('dust2.glb', (gltf) => {
         const mapa = gltf.scene;
         mapa.scale.set(1.25, 1.25, 1.25); mapa.position.y = -6; scene.add(mapa);
         mapa.traverse((child) => { if (child.isMesh) mapColliders.push(child); });
