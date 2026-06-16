@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Dust 2 FPS</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: Arial; }
+        #hud { position: absolute; top: 10px; left: 10px; color: lime; z-index: 100; }
+        #crosshair { position: absolute; top: 50%; left: 50%; font-size: 32px; color: white; transform: translate(-50%, -50%); z-index: 100; pointer-events: none; }
+        #info { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); color: #aaa; z-index: 100; }
+    </style>
+</head>
+<body>
+    <div id="hud">Dust 2 FPS - Carregando...</div>
+    <div id="crosshair">+</div>
+    <div id="info">Clique na tela para jogar • ESC para soltar o mouse</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/js/controls/PointerLockControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <script src="js/game.js"></script>
+</body>
+</html>
