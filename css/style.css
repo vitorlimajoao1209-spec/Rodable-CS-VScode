@@ -1,0 +1,43 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background: #000;
+    font-family: 'Courier New', monospace;
+}
+
+#hud {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: lime;
+    background: rgba(0,0,0,0.6);
+    padding: 8px 12px;
+    border-radius: 4px;
+    z-index: 100;
+    font-size: 16px;
+}
+
+#crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 36px;
+    color: rgba(255,255,255,0.9);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 100;
+    user-select: none;
+}
+
+#info {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #aaa;
+    background: rgba(0,0,0,0.5);
+    padding: 6px 12px;
+    border-radius: 4px;
+    z-index: 100;
+    font-size: 14px;
+}
