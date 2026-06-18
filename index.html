@@ -3,42 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <title>Dust 2 FPS</title>
-    
-    <!-- Puxa o seu arquivo style.css externo da pasta CSS -->
     <link rel="stylesheet" href="CSS/style.css">
-    
-    <!-- Pequeno ajuste de estilo apenas para o placar superior se alinhar na tela -->
     <style>
-        #match-score {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-        }
+        #match-score { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 100; }
+        /* Estilo do Chat de Comandos */
+        #chat-container { position: absolute; bottom: 60px; left: 10px; z-index: 150; width: 300px; display: none; }
+        #chat-input { width: 100%; background: rgba(0,0,0,0.8); color: lime; border: 1px solid lime; padding: 5px; font-family: 'Courier New', monospace; }
+        /* Estilo do Painel de Coordenadas */
+        #pos-debug { position: absolute; top: 50px; left: 10px; color: yellow; font-family: 'Courier New', monospace; font-size: 12px; z-index: 100; background: rgba(0,0,0,0.5); padding: 4px; border-radius: 4px; }
     </style>
 </head>
 <body>
-    <!-- Placar Superior do Round e Pontos TR (Necessário para o game.js de 410 linhas) -->
-    <div id="match-score">
-        ROUND <span id="hud-round">1</span> | TR: <span id="score-t">0</span>
-    </div>
-
-    <!-- HUD do Jogador com as IDs que o JavaScript precisa atualizar dinamicamente -->
-    <div id="hud">
-        $ <span id="hud-money">1600</span> | <span id="hud-weapon">AK47 [30/90]</span>
-    </div>
-
+    <div id="pos-debug">X: 0 | Y: 0 | Z: 0</div>
+    <div id="match-score">ROUND <span id="hud-round">1</span> | TR: <span id="score-t">0</span></div>
+    <div id="hud">$ <span id="hud-money">1600</span> | <span id="hud-weapon">AK47 [30/90]</span></div>
     <div id="crosshair">+</div>
-    <div id="info">Clique na tela para jogar • ESC para soltar o mouse • B para Loja • F para Plantar</div>
-
-    <!-- Importações das bibliotecas (mantive a versão r134 que você escolheu) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/js/controls/PointerLockControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/js/loaders/GLTFLoader.js"></script>
+    <div id="info">Clique na tela • ESC solta o mouse • B Loja • F Plantar • ENTER para Chat</div>
     
-    <!-- Carrega o seu script com o motor do jogo -->
+    <div id="chat-container">
+        <input type="text" id="chat-input" placeholder="Digite /voar ou comando...">
+    </div>
+
+    <script src="https://cloudflare.com"></script>
+    <script src="https://jsdelivr.net"></script>
+    <script src="https://jsdelivr.net"></script>
     <script src="js/game.js"></script>
 </body>
 </html>
-
