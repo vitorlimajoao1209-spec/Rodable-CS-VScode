@@ -1,6 +1,5 @@
-/* ==================== DUST 2 FPS - ESTILO CS:GO MODERNO ==================== */
+/* ==================== DUST 2 - ESTILO SÉRIO ==================== */
 
-/* ==================== RESET & BASE ==================== */
 * {
     margin: 0;
     padding: 0;
@@ -8,10 +7,10 @@
 }
 
 body {
-    font-family: 'Segoe UI', 'Arial', sans-serif;
+    font-family: 'Courier New', 'Lucida Console', monospace;
     overflow: hidden;
-    background: #0a0a0a;
-    color: #fff;
+    background: #000;
+    color: #ccc;
     user-select: none;
     -webkit-user-select: none;
 }
@@ -27,333 +26,318 @@ body {
 }
 
 .screen.active {
-    display: block;
-}
-
-/* ==================== BACKGROUND ANIMADO ==================== */
-#login-screen {
-    background: linear-gradient(135deg, #0d1117 0%, #161b22 30%, #0d1117 60%, #161b22 100%);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-#login-screen::before {
-    content: '';
+/* ==================== BACKGROUNDS ==================== */
+.login-bg,
+.menu-bg {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: 
-        radial-gradient(ellipse at 20% 50%, rgba(255, 153, 0, 0.03) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 20%, rgba(255, 100, 0, 0.02) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 80%, rgba(255, 200, 0, 0.02) 0%, transparent 50%);
+    background: #0a0a0a;
 }
 
-/* Partículas flutuantes */
-#login-screen::after {
+.login-bg::before,
+.menu-bg::before {
     content: '';
     position: absolute;
     width: 100%;
     height: 100%;
-    background-image: 
-        radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.1), transparent),
-        radial-gradient(1px 1px at 20% 60%, rgba(255,255,255,0.1), transparent),
-        radial-gradient(1px 1px at 30% 10%, rgba(255,255,255,0.08), transparent),
-        radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.1), transparent),
-        radial-gradient(1px 1px at 50% 40%, rgba(255,255,255,0.08), transparent),
-        radial-gradient(1px 1px at 60% 90%, rgba(255,255,255,0.1), transparent),
-        radial-gradient(1px 1px at 70% 30%, rgba(255,255,255,0.08), transparent),
-        radial-gradient(1px 1px at 80% 70%, rgba(255,255,255,0.1), transparent),
-        radial-gradient(1px 1px at 90% 50%, rgba(255,255,255,0.08), transparent),
-        radial-gradient(2px 2px at 15% 45%, rgba(255,255,255,0.15), transparent),
-        radial-gradient(2px 2px at 55% 15%, rgba(255,255,255,0.15), transparent),
-        radial-gradient(2px 2px at 75% 65%, rgba(255,255,255,0.15), transparent),
-        radial-gradient(2px 2px at 35% 35%, rgba(255,255,255,0.12), transparent),
-        radial-gradient(2px 2px at 85% 85%, rgba(255,255,255,0.12), transparent);
-    background-size: 200px 200px;
-    animation: particlesFloat 20s linear infinite;
+    background: radial-gradient(ellipse at center, #1a1a1a 0%, #0a0a0a 70%);
 }
 
-@keyframes particlesFloat {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(-200px); }
+/* Scanlines */
+.login-bg::after,
+.menu-bg::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+    );
 }
 
-/* ==================== CONTAINER LOGIN (VIDRO) ==================== */
-.login-container {
+/* ==================== CAIXAS ==================== */
+.login-box,
+.menu-box {
     position: relative;
     z-index: 1;
-    background: rgba(13, 17, 23, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 153, 0, 0.3);
-    border-radius: 16px;
-    padding: 40px 35px;
-    width: 420px;
-    box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(255, 153, 0, 0.1) inset,
-        0 0 60px rgba(255, 153, 0, 0.08);
-    animation: containerSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    background: rgba(10,10,10,0.95);
+    border: 1px solid #333;
+    padding: 35px 30px;
+    width: 400px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.8);
 }
 
-@keyframes containerSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(30px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+.login-box {
+    animation: fadeIn 0.3s ease;
+}
+
+.menu-box {
+    width: 420px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 /* ==================== LOGO ==================== */
 .login-logo {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
 }
 
 .login-logo h1 {
-    font-size: 44px;
-    font-weight: 900;
-    letter-spacing: 4px;
-    background: linear-gradient(180deg, #ffcc00 0%, #ff8800 50%, #ff6600 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: none;
-    filter: drop-shadow(0 0 20px rgba(255, 150, 0, 0.5));
-    margin-bottom: 5px;
+    font-size: 40px;
+    font-weight: bold;
+    color: #ff8800;
+    letter-spacing: 8px;
+    text-shadow: 0 0 20px rgba(255,136,0,0.4);
 }
 
 .login-logo p {
-    color: rgba(255, 255, 255, 0.5);
+    color: #666;
     font-size: 12px;
     letter-spacing: 6px;
-    text-transform: uppercase;
-    font-weight: 300;
-}
-
-.version {
-    color: rgba(255, 255, 255, 0.2);
-    font-size: 10px;
-    margin-top: 8px;
-    letter-spacing: 2px;
+    margin-top: 5px;
 }
 
 /* ==================== TABS ==================== */
 .login-tabs {
     display: flex;
-    gap: 6px;
-    margin-bottom: 25px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 10px;
-    padding: 4px;
+    gap: 3px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #333;
 }
 
 .tab-btn {
     flex: 1;
-    padding: 10px 12px;
+    padding: 8px;
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.5);
+    color: #666;
     cursor: pointer;
-    border-radius: 8px;
-    font-family: 'Segoe UI', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
     letter-spacing: 1px;
-    transition: all 0.3s ease;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
 }
 
 .tab-btn:hover {
-    color: rgba(255, 255, 255, 0.8);
-    background: rgba(255, 255, 255, 0.05);
+    color: #999;
 }
 
 .tab-btn.active {
-    background: linear-gradient(135deg, #ff8800, #ff6600);
-    color: #000;
-    font-weight: 700;
-    box-shadow: 0 4px 15px rgba(255, 136, 0, 0.4);
+    color: #ff8800;
+    border-bottom: 2px solid #ff8800;
 }
 
-/* ==================== FORMULÁRIOS ==================== */
+/* ==================== FORMULARIOS ==================== */
 .login-form {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
 }
 
-.form-group {
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.input-group label {
+    color: #888;
+    font-size: 10px;
+    letter-spacing: 2px;
+}
+
+.input-group input,
+.input-group select {
+    padding: 10px;
+    background: #111;
+    border: 1px solid #333;
+    color: #ccc;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+    border-color: #ff8800;
+}
+
+.input-group input::placeholder {
+    color: #444;
+}
+
+.input-group select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.input-group select option {
+    background: #111;
+    color: #ccc;
+}
+
+/* ==================== BOTOES ==================== */
+.btn {
+    padding: 10px;
+    border: 1px solid #333;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+}
+
+.btn.primary {
+    background: #ff8800;
+    border-color: #ff8800;
+    color: #000;
+}
+
+.btn.primary:hover {
+    background: #ffaa00;
+}
+
+.btn.secondary {
+    background: transparent;
+    color: #888;
+}
+
+.btn.secondary:hover {
+    color: #ff8800;
+    border-color: #ff8800;
+}
+
+.login-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 8px;
+}
+
+.login-links span {
+    color: #555;
+    font-size: 10px;
+    cursor: pointer;
+    letter-spacing: 1px;
+}
+
+.login-links span:hover {
+    color: #ff8800;
+}
+
+/* ==================== MENSAGENS ==================== */
+.message {
+    font-size: 11px;
+    text-align: center;
+    padding: 8px;
+    display: none;
+    letter-spacing: 1px;
+}
+
+.message.error {
+    color: #ff4444;
+    background: rgba(255,0,0,0.08);
+    border: 1px solid rgba(255,0,0,0.2);
+}
+
+.message.success {
+    color: #00cc66;
+    background: rgba(0,204,102,0.08);
+    border: 1px solid rgba(0,204,102,0.2);
+}
+
+/* ==================== MENU ==================== */
+.menu-box h2 {
+    text-align: center;
+    color: #ff8800;
+    font-size: 22px;
+    letter-spacing: 6px;
+    margin-bottom: 20px;
+}
+
+.menu-user {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #222;
+}
+
+.menu-user span {
+    display: block;
+    color: #ccc;
+    font-size: 14px;
+    letter-spacing: 2px;
+}
+
+.badge {
+    display: inline-block;
+    color: #ff8800 !important;
+    font-size: 10px !important;
+    letter-spacing: 3px !important;
+    margin-top: 4px;
+}
+
+.rank {
+    color: #ffaa00 !important;
+    font-size: 11px !important;
+    margin-top: 4px;
+}
+
+.menu-buttons {
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
-.form-group label {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
+.menu-btn {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #333;
+    color: #aaa;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
 }
 
-.form-group input,
-.form-group select {
-    padding: 12px 14px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    color: #fff;
-    font-family: 'Segoe UI', sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: all 0.3s ease;
-}
-
-.form-group input:focus,
-.form-group select:focus {
+.menu-btn:hover {
+    background: rgba(255,136,0,0.1);
     border-color: #ff8800;
-    box-shadow: 0 0 0 3px rgba(255, 136, 0, 0.15);
-    background: rgba(255, 255, 255, 0.06);
-}
-
-.form-group input::placeholder {
-    color: rgba(255, 255, 255, 0.25);
-}
-
-.form-group select {
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-}
-
-.form-group select option {
-    background: #161b22;
-    color: #fff;
-}
-
-/* ==================== BOTÕES ==================== */
-.login-btn {
-    padding: 13px;
-    border: none;
-    border-radius: 10px;
-    font-family: 'Segoe UI', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    position: relative;
-    overflow: hidden;
-}
-
-.login-btn.primary {
-    background: linear-gradient(135deg, #ff8800, #ff6600);
-    color: #000;
-    box-shadow: 0 4px 20px rgba(255, 136, 0, 0.3);
-}
-
-.login-btn.primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(255, 136, 0, 0.5);
-}
-
-.login-btn.primary:active {
-    transform: translateY(0);
-}
-
-.login-btn.secondary {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.7);
-}
-
-.login-btn.secondary:hover {
-    border-color: rgba(255, 136, 0, 0.5);
-    color: #ff8800;
-    background: rgba(255, 136, 0, 0.05);
-}
-
-.button-group {
-    display: flex;
-    gap: 8px;
-}
-
-.button-group .login-btn {
-    flex: 1;
-}
-
-/* ==================== LINKS ==================== */
-.login-links {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 5px;
-}
-
-.login-links a {
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 11px;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    font-weight: 500;
-}
-
-.login-links a:hover {
     color: #ff8800;
 }
 
-/* ==================== MENSAGENS ==================== */
-.error-message {
-    color: #ff4444;
-    font-size: 12px;
-    text-align: center;
-    display: none;
-    padding: 10px;
-    background: rgba(255, 0, 0, 0.08);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 0, 0, 0.2);
-    font-weight: 500;
-}
-
-.success-message {
-    color: #00ff88;
-    font-size: 12px;
-    text-align: center;
-    display: none;
-    padding: 10px;
-    background: rgba(0, 255, 136, 0.08);
-    border-radius: 8px;
-    border: 1px solid rgba(0, 255, 136, 0.2);
-    font-weight: 500;
-}
-
-/* ==================== ONLINE COUNTER ==================== */
-.online-counter {
-    text-align: center;
-    margin-top: 15px;
-    color: rgba(255, 255, 255, 0.3);
-    font-size: 11px;
-    letter-spacing: 1px;
-}
-
-.online-counter span {
-    color: #00ff88;
-    font-weight: 700;
-}
-
-/* ==================== TELA DO JOGO ==================== */
+/* ==================== JOGO ==================== */
 #game-screen {
     background: #000;
+}
+
+#game-screen.active {
+    display: block;
 }
 
 #game-container {
@@ -365,7 +349,7 @@ body {
     display: block;
 }
 
-/* ==================== CROSSHAIR (MIRA) ==================== */
+/* ==================== CROSSHAIR ==================== */
 #crosshair {
     position: absolute;
     top: 50%;
@@ -378,365 +362,271 @@ body {
 .crosshair-line {
     position: absolute;
     background: #00ff00;
-    border-radius: 1px;
 }
 
-.crosshair-line.horizontal {
-    width: 18px;
+.crosshair-line.h {
+    width: 16px;
     height: 2px;
     top: -1px;
-    left: -9px;
+    left: -8px;
 }
 
-.crosshair-line.vertical {
+.crosshair-line.v {
     width: 2px;
-    height: 18px;
-    top: -9px;
+    height: 16px;
+    top: -8px;
     left: -1px;
 }
 
 /* ==================== HUD ==================== */
-#hud {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    pointer-events: none;
-    z-index: 20;
-}
-
 #scoreboard {
     position: absolute;
-    top: 15px;
+    top: 10px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 30px;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(10px);
-    padding: 8px 25px;
-    border-radius: 0 0 12px 12px;
-    font-size: 16px;
-    font-weight: 700;
+    gap: 25px;
+    background: rgba(0,0,0,0.8);
+    padding: 6px 20px;
+    font-size: 14px;
     letter-spacing: 2px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid #333;
     border-top: none;
 }
 
 #hud-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
     display: flex;
     justify-content: center;
-    gap: 35px;
-    padding: 10px 20px;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(10px);
-    font-size: 13px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 30px;
+    padding: 8px;
+    background: rgba(0,0,0,0.8);
+    font-size: 12px;
+    letter-spacing: 1px;
+    border-top: 1px solid #333;
 }
 
-#hud-money { color: #00ff88 !important; font-weight: 700; }
-#hud-weapon { color: #ffaa00 !important; font-weight: 600; }
-#hud-hp { color: #ff4444 !important; font-weight: 700; }
+#hud-money { color: #00cc66; }
+#hud-weapon { color: #ffaa00; }
+#hud-hp { color: #ff4444; }
 
-/* ==================== BARRAS DE VIDA ==================== */
+/* ==================== BARRAS ==================== */
 #health-bar-container {
     position: absolute;
-    bottom: 55px;
-    left: 20px;
-    width: 200px;
-    height: 8px;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 4px;
-    z-index: 20;
-    border: 1px solid rgba(255, 0, 0, 0.3);
-    overflow: hidden;
+    bottom: 45px;
+    left: 15px;
+    width: 180px;
+    height: 6px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,0,0,0.3);
 }
 
 #health-bar {
-    width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, #ff0000, #ff4444);
-    transition: width 0.3s ease;
-    border-radius: 3px;
+    background: #ff4444;
+    transition: width 0.3s;
 }
 
 #health-text {
     position: absolute;
-    top: -16px;
+    top: -14px;
     left: 0;
     color: #ff4444;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1px;
+    font-size: 9px;
 }
 
 #armor-bar-container {
     position: absolute;
-    bottom: 43px;
-    left: 20px;
-    width: 200px;
-    height: 5px;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 3px;
-    z-index: 20;
-    border: 1px solid rgba(0, 136, 255, 0.3);
-    overflow: hidden;
+    bottom: 36px;
+    left: 15px;
+    width: 180px;
+    height: 4px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(0,136,255,0.3);
 }
 
 #armor-bar {
-    width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, #0044ff, #0088ff);
-    transition: width 0.3s ease;
-    border-radius: 2px;
+    background: #0088ff;
+    transition: width 0.3s;
 }
 
 #armor-text {
     position: absolute;
-    top: -14px;
+    top: -12px;
     left: 0;
     color: #0088ff;
-    font-size: 9px;
-    font-weight: 600;
+    font-size: 8px;
 }
 
-/* ==================== SLOTS DE ARMA ==================== */
+/* ==================== SLOTS ==================== */
 #weapon-slots {
     position: absolute;
-    bottom: 20px;
-    right: 20px;
+    bottom: 15px;
+    right: 15px;
     display: flex;
-    gap: 5px;
-    z-index: 20;
+    gap: 3px;
 }
 
 #weapon-slots .slot {
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    padding: 6px 10px;
-    border-radius: 8px;
+    background: rgba(0,0,0,0.8);
+    border: 1px solid #444;
+    padding: 4px 8px;
+    font-size: 9px;
     text-align: center;
-    color: #fff;
-    font-size: 10px;
-    min-width: 55px;
-    transition: all 0.2s ease;
+    letter-spacing: 1px;
 }
 
 #weapon-slots .slot.active {
     border-color: #ff8800;
-    background: rgba(255, 136, 0, 0.2);
-    box-shadow: 0 0 15px rgba(255, 136, 0, 0.3);
-}
-
-#weapon-slots .slot .slot-key {
-    color: #ff8800;
-    font-weight: 700;
-    font-size: 11px;
-    letter-spacing: 1px;
 }
 
 /* ==================== KILLFEED ==================== */
 #killfeed {
     position: absolute;
-    top: 70px;
-    right: 20px;
-    z-index: 20;
+    top: 60px;
+    right: 15px;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 2px;
 }
 
 #killfeed .kill-entry {
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(10px);
-    padding: 5px 12px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    animation: killSlide 0.3s ease;
-    border-left: 3px solid #ff8800;
-    letter-spacing: 0.5px;
+    background: rgba(0,0,0,0.7);
+    padding: 3px 10px;
+    font-size: 10px;
+    border-left: 2px solid #ff8800;
+    letter-spacing: 1px;
 }
 
-@keyframes killSlide {
-    from { opacity: 0; transform: translateX(30px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-/* ==================== RANKING AO VIVO ==================== */
+/* ==================== RANKING ==================== */
 #ranking-live {
     position: absolute;
-    top: 70px;
-    left: 20px;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    z-index: 20;
-    min-width: 170px;
-    max-width: 210px;
-    overflow: hidden;
+    top: 60px;
+    left: 15px;
+    background: rgba(0,0,0,0.8);
+    border: 1px solid #333;
 }
 
 #ranking-header {
-    background: rgba(255, 136, 0, 0.15);
-    padding: 8px 12px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
+    padding: 5px 10px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    border-bottom: 1px solid #333;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 #ranking-header button {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.6);
+    color: #888;
     cursor: pointer;
-    font-size: 16px;
-    padding: 0 4px;
 }
 
 #ranking-list {
-    padding: 6px;
-    max-height: 200px;
-    overflow-y: auto;
+    padding: 4px;
+    font-size: 9px;
 }
 
 #ranking-list .rank-item {
     display: flex;
     justify-content: space-between;
-    padding: 4px 8px;
-    font-size: 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-    border-radius: 4px;
-}
-
-#ranking-list .rank-item:last-child {
-    border-bottom: none;
+    padding: 2px 5px;
 }
 
 #ranking-list .rank-item.you {
     color: #ff8800;
-    font-weight: 700;
-    background: rgba(255, 136, 0, 0.08);
 }
 
 /* ==================== CHAT ==================== */
 .game-chat {
     position: absolute;
-    bottom: 100px;
-    left: 20px;
-    width: 350px;
-    max-height: 180px;
+    bottom: 80px;
+    left: 15px;
+    width: 320px;
+    max-height: 150px;
     overflow-y: auto;
-    z-index: 25;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    font-size: 11px;
+    gap: 1px;
 }
 
 .game-chat .chat-msg {
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(5px);
-    padding: 4px 10px;
-    border-radius: 4px;
-    animation: chatFade 0.3s ease;
+    background: rgba(0,0,0,0.5);
+    padding: 2px 8px;
+    font-size: 10px;
 }
 
-@keyframes chatFade {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.chat-msg.player { color: #fff; border-left: 2px solid #fff; }
-.chat-msg.radio { color: #88ccff; border-left: 2px solid #88ccff; font-style: italic; }
-.chat-msg.bot { color: #88ff88; border-left: 2px solid #88ff88; }
-.chat-msg.admin { color: #ff6666; border-left: 2px solid #ff4444; font-weight: 700; }
+.chat-msg.player { color: #ccc; border-left: 2px solid #ccc; }
+.chat-msg.radio { color: #88aacc; border-left: 2px solid #88aacc; }
+.chat-msg.bot { color: #88aa88; border-left: 2px solid #88aa88; }
+.chat-msg.admin { color: #ff6666; border-left: 2px solid #ff4444; }
 .chat-msg.system { color: #ffaa00; border-left: 2px solid #ffaa00; }
-.chat-msg.mvp { color: #ffdd00; border-left: 2px solid #ffdd00; font-size: 12px; font-weight: 700; }
+.chat-msg.mvp { color: #ffcc00; border-left: 2px solid #ffcc00; }
 
 .game-chat-input {
     position: absolute;
-    bottom: 75px;
-    left: 20px;
-    width: 350px;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 136, 0, 0.4);
-    color: #fff;
-    padding: 8px 12px;
-    font-family: 'Segoe UI', sans-serif;
-    font-size: 12px;
+    bottom: 58px;
+    left: 15px;
+    width: 320px;
+    background: rgba(0,0,0,0.9);
+    border: 1px solid #ff8800;
+    color: #ccc;
+    padding: 6px 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
     outline: none;
-    z-index: 26;
-    border-radius: 8px;
 }
 
 /* ==================== INDICADORES ==================== */
 #grenade-indicator {
     position: absolute;
-    bottom: 20px;
+    bottom: 15px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 10px;
-    z-index: 20;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(10px);
-    padding: 6px 18px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 8px;
+    background: rgba(0,0,0,0.6);
+    padding: 4px 12px;
+    border: 1px solid #333;
 }
 
 #grenade-indicator span {
-    font-size: 10px;
-    padding: 3px 10px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    font-weight: 600;
-    letter-spacing: 0.5px;
+    font-size: 9px;
+    letter-spacing: 1px;
 }
 
 #reload-indicator {
     position: absolute;
-    bottom: 130px;
+    bottom: 120px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(15px);
+    background: rgba(0,0,0,0.9);
     border: 1px solid #ff8800;
-    padding: 12px 24px;
-    border-radius: 12px;
-    z-index: 30;
+    padding: 10px 20px;
     text-align: center;
     color: #ff8800;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
+    font-size: 10px;
+    letter-spacing: 2px;
 }
 
 #reload-bar {
-    width: 150px;
-    height: 5px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    margin-top: 6px;
-    overflow: hidden;
+    width: 120px;
+    height: 3px;
+    background: #333;
+    margin-top: 5px;
 }
 
 #reload-bar::after {
     content: '';
     display: block;
-    width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, #ff8800, #ffaa00);
+    background: #ff8800;
     animation: reloadAnim 2.5s linear;
-    border-radius: 2px;
 }
 
 @keyframes reloadAnim {
@@ -746,37 +636,31 @@ body {
 
 #grenade-power-indicator {
     position: absolute;
-    bottom: 170px;
+    bottom: 150px;
     left: 50%;
     transform: translateX(-50%);
-    width: 200px;
-    height: 14px;
-    background: rgba(0, 0, 0, 0.8);
-    border: 1px solid rgba(255, 136, 0, 0.4);
-    border-radius: 7px;
-    overflow: hidden;
-    z-index: 30;
+    width: 180px;
+    height: 10px;
+    background: rgba(0,0,0,0.8);
+    border: 1px solid #333;
 }
 
 #grenade-power-bar {
     height: 100%;
-    background: linear-gradient(90deg, #00ff88, #ffaa00, #ff4400);
-    transition: width 0.05s linear;
-    border-radius: 6px;
+    background: linear-gradient(90deg, #00cc66, #ffaa00, #ff4444);
+    transition: width 0.05s;
 }
 
 #grenade-power-text {
     position: absolute;
-    top: -18px;
+    top: -16px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 10px;
-    font-weight: 700;
-    color: #fff;
+    font-size: 9px;
     letter-spacing: 1px;
 }
 
-/* ==================== PAINÉIS ==================== */
+/* ==================== PAINEIS ==================== */
 #settings-panel,
 #admin-panel,
 #admin-log,
@@ -786,16 +670,11 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(13, 17, 23, 0.95);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 136, 0, 0.3);
-    padding: 25px;
-    border-radius: 16px;
+    background: rgba(10,10,10,0.98);
+    border: 1px solid #333;
+    padding: 20px;
     z-index: 100;
-    min-width: 320px;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    min-width: 300px;
 }
 
 #settings-panel h2,
@@ -804,61 +683,48 @@ body {
 #secret-chat h3,
 #create-room-form h3 {
     color: #ff8800;
-    margin-bottom: 18px;
     text-align: center;
-    font-weight: 700;
-    letter-spacing: 2px;
-    font-size: 18px;
+    margin-bottom: 15px;
+    letter-spacing: 3px;
+    font-size: 16px;
 }
 
 .setting-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin: 12px 0;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 12px;
+    gap: 10px;
+    margin: 8px 0;
+    font-size: 11px;
+    letter-spacing: 1px;
 }
 
-.setting-item label {
-    flex: 1;
-    font-weight: 600;
-}
-
-.setting-item input[type="range"] {
-    flex: 2;
-    accent-color: #ff8800;
-}
-
-.setting-item select {
-    flex: 1;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #fff;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-family: 'Segoe UI', sans-serif;
-    font-size: 12px;
+.setting-item select,
+.setting-item input {
+    background: #111;
+    border: 1px solid #333;
+    color: #ccc;
+    padding: 4px 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
 }
 
 button {
-    padding: 10px 20px;
-    background: linear-gradient(135deg, #ff8800, #ff6600);
-    border: none;
-    border-radius: 8px;
-    color: #000;
-    font-weight: 700;
+    padding: 8px 16px;
+    background: #222;
+    border: 1px solid #444;
+    color: #aaa;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
     cursor: pointer;
-    font-family: 'Segoe UI', sans-serif;
-    font-size: 12px;
-    letter-spacing: 1px;
-    transition: all 0.3s ease;
-    margin: 4px;
+    transition: all 0.2s;
+    margin: 3px;
 }
 
 button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 136, 0, 0.4);
+    background: #333;
+    border-color: #ff8800;
+    color: #ff8800;
 }
 
 /* ==================== BUY MENU ==================== */
@@ -867,46 +733,42 @@ button:hover {
     top: 5%;
     left: 5%;
     width: 90%;
-    max-height: 85vh;
+    max-height: 80vh;
     overflow-y: auto;
-    background: rgba(13, 17, 23, 0.95);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 136, 0, 0.3);
-    color: #fff;
-    padding: 20px;
+    background: rgba(10,10,10,0.95);
+    border: 1px solid #333;
+    padding: 15px;
     display: none;
     z-index: 50;
-    border-radius: 16px;
 }
 
 /* ==================== DEBUG ==================== */
 #pos-debug {
     position: absolute;
-    bottom: 5px;
-    left: 5px;
-    color: rgba(255, 255, 255, 0.3);
-    font-size: 9px;
-    z-index: 30;
+    bottom: 3px;
+    left: 3px;
+    color: rgba(255,255,255,0.2);
+    font-size: 8px;
     pointer-events: none;
     font-family: monospace;
 }
 
-/* ==================== ANIMAÇÕES DE DANO ==================== */
+/* ==================== DANO ==================== */
 .damage-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle, transparent 35%, rgba(255, 0, 0, 0.35) 100%);
+    background: radial-gradient(circle, transparent 35%, rgba(255,0,0,0.3) 100%);
     pointer-events: none;
     z-index: 50;
-    animation: damagePulse 0.4s ease-out;
+    animation: damagePulse 0.3s ease-out;
 }
 
 @keyframes damagePulse {
-    0% { opacity: 0.7; }
-    100% { opacity: 0; }
+    from { opacity: 0.6; }
+    to { opacity: 0; }
 }
 
 .death-screen {
@@ -915,38 +777,29 @@ button:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255, 0, 0, 0.6);
+    background: rgba(180,0,0,0.6);
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 80px;
-    font-weight: 900;
+    font-size: 60px;
+    font-weight: bold;
     z-index: 100;
     pointer-events: none;
-    animation: deathFade 0.5s ease;
-    text-shadow: 0 0 40px rgba(255, 0, 0, 0.8);
-    letter-spacing: 5px;
-}
-
-@keyframes deathFade {
-    from { opacity: 0; transform: scale(1.3); }
-    to { opacity: 1; transform: scale(1); }
+    letter-spacing: 10px;
 }
 
 /* ==================== SCROLLBAR ==================== */
 ::-webkit-scrollbar {
-    width: 5px;
+    width: 4px;
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
+    background: #0a0a0a;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 136, 0, 0.5);
-    border-radius: 3px;
+    background: #333;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -955,29 +808,9 @@ button:hover {
 
 /* ==================== RESPONSIVO ==================== */
 @media (max-width: 600px) {
-    .login-container {
+    .login-box,
+    .menu-box {
         width: 92%;
-        padding: 25px 20px;
+        padding: 20px;
     }
-    
-    .login-logo h1 {
-        font-size: 30px;
-    }
-    
-    #scoreboard {
-        font-size: 12px;
-        gap: 15px;
-        padding: 6px 15px;
-    }
-    
-    .game-chat,
-    .game-chat-input {
-        width: 250px;
-    }
-}
-
-/* ==================== SELEÇÃO DE TEXTO ==================== */
-::selection {
-    background: rgba(255, 136, 0, 0.3);
-    color: #fff;
 }
