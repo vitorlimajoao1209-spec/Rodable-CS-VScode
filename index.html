@@ -2,31 +2,334 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Dust 2 FPS</title>
-    <link rel="stylesheet" href="CSS/style.css">
-    <style>
-        #match-score { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 100; }
-        /* Estilo do Chat de Comandos */
-        #chat-container { position: absolute; bottom: 60px; left: 10px; z-index: 150; width: 300px; display: none; }
-        #chat-input { width: 100%; background: rgba(0,0,0,0.8); color: lime; border: 1px solid lime; padding: 5px; font-family: 'Courier New', monospace; }
-        /* Estilo do Painel de Coordenadas */
-        #pos-debug { position: absolute; top: 50px; left: 10px; color: yellow; font-family: 'Courier New', monospace; font-size: 12px; z-index: 100; background: rgba(0,0,0,0.5); padding: 4px; border-radius: 4px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 DUST 2 FPS</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="pos-debug">X: 0 | Y: 0 | Z: 0</div>
-    <div id="match-score">ROUND <span id="hud-round">1</span> | TR: <span id="score-t">0</span></div>
-    <div id="hud">$ <span id="hud-money">1600</span> | <span id="hud-weapon">AK47 [30/90]</span></div>
-    <div id="crosshair">+</div>
-    <div id="info">Clique na tela • ESC solta o mouse • B Loja • F Plantar • ENTER para Chat</div>
     
-    <div id="chat-container">
-        <input type="text" id="chat-input" placeholder="Digite /voar ou comando...">
+    <!-- ==================== TELA DE LOGIN ==================== -->
+    <div id="login-screen" class="screen active">
+        <div class="background-animation"></div>
+        
+        <div class="login-container">
+            <div class="login-logo">
+                <h1>🎯 DUST 2</h1>
+                <p>FPS MULTIPLAYER</p>
+                <div class="version">v2.0</div>
+            </div>
+            
+            <div class="login-tabs">
+                <button class="tab-btn active" onclick="switchTab('player')">🎮 PLAYER</button>
+                <button class="tab-btn" onclick="switchTab('guest')">👤 CONVIDADO</button>
+                <button class="tab-btn" onclick="switchTab('admin')">👑 ADMIN</button>
+            </div>
+            
+            <!-- FORMULÁRIO PLAYER -->
+            <div id="player-form" class="login-form">
+                <div id="login-step-1">
+                    <div class="form-group">
+                        <label>✉️ Email</label>
+                        <input type="email" id="player-email" placeholder="seu@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>🔑 Senha</label>
+                        <input type="password" id="player-password" placeholder="Sua senha">
+                    </div>
+                    <button class="login-btn primary" onclick="loginPlayer()">
+                        🚀 ENTRAR
+                    </button>
+                    <div class="login-links">
+                        <a href="#" onclick="showRegister()">📝 Criar conta</a>
+                        <a href="#" onclick="showForgotPassword()">😅 Esqueci a senha</a>
+                    </div>
+                </div>
+                
+                <!-- REGISTRO -->
+                <div id="register-step" style="display:none;">
+                    <h3 style="color:#de9b35;">📝 CRIAR CONTA</h3>
+                    <div class="form-group">
+                        <label>👤 Nome de Guerra</label>
+                        <input type="text" id="reg-name" placeholder="Seu nick único" maxlength="20">
+                    </div>
+                    <div class="form-group">
+                        <label>✉️ Email</label>
+                        <input type="email" id="reg-email" placeholder="seu@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>🔑 Senha</label>
+                        <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres">
+                    </div>
+                    <div class="form-group">
+                        <label>🔑 Confirmar Senha</label>
+                        <input type="password" id="reg-confirm" placeholder="Repita a senha">
+                    </div>
+                    <button class="login-btn primary" onclick="registerPlayer()">
+                        📝 CRIAR CONTA
+                    </button>
+                    <button class="login-btn secondary" onclick="showLogin()">
+                        ⬅️ Voltar
+                    </button>
+                </div>
+                
+                <!-- VERIFICAÇÃO DE EMAIL -->
+                <div id="verify-step" style="display:none;">
+                    <h3 style="color:#de9b35;">✉️ VERIFICAÇÃO</h3>
+                    <p style="color:#aaa; text-align:center;">
+                        Enviamos um código de 6 dígitos para:<br>
+                        <b id="verify-email-display"></b>
+                    </p>
+                    <div class="form-group">
+                        <label>🔢 Código</label>
+                        <input type="text" id="verify-code" placeholder="000000" maxlength="6" style="text-align:center; font-size:24px; letter-spacing:10px;">
+                    </div>
+                    <button class="login-btn primary" onclick="verifyEmail()">
+                        ✅ CONFIRMAR
+                    </button>
+                    <button class="login-btn secondary" onclick="showLogin()">
+                        ⬅️ Cancelar
+                    </button>
+                </div>
+                
+                <!-- ESQUECEU SENHA -->
+                <div id="forgot-step" style="display:none;">
+                    <h3 style="color:#de9b35;">😅 RECUPERAR SENHA</h3>
+                    <div class="form-group">
+                        <label>✉️ Email cadastrado</label>
+                        <input type="email" id="forgot-email" placeholder="seu@email.com">
+                    </div>
+                    <button class="login-btn primary" onclick="forgotPassword()">
+                        📧 ENVIAR CÓDIGO
+                    </button>
+                    
+                    <div id="reset-password-section" style="display:none;">
+                        <div class="form-group">
+                            <label>🔢 Código recebido</label>
+                            <input type="text" id="reset-code" placeholder="000000" maxlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label>🔑 Nova Senha</label>
+                            <input type="password" id="reset-password" placeholder="Nova senha">
+                        </div>
+                        <button class="login-btn primary" onclick="resetPassword()">
+                            🔄 TROCAR SENHA
+                        </button>
+                    </div>
+                    
+                    <button class="login-btn secondary" onclick="showLogin()">
+                        ⬅️ Voltar
+                    </button>
+                </div>
+            </div>
+            
+            <!-- FORMULÁRIO CONVIDADO -->
+            <div id="guest-form" class="login-form" style="display:none;">
+                <p style="color:#aaa; text-align:center;">
+                    👤 Modo offline contra bots<br>
+                    Sem chat, sem multiplayer
+                </p>
+                <div class="form-group">
+                    <label>🎯 Dificuldade</label>
+                    <select id="guest-difficulty">
+                        <option value="easy">Fácil (3 bots)</option>
+                        <option value="normal" selected>Normal (5 bots)</option>
+                        <option value="hard">Difícil (10 bots)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>🎮 Modo</label>
+                    <select id="guest-mode">
+                        <option value="deathmatch">Deathmatch</option>
+                        <option value="defuse">Defuse</option>
+                    </select>
+                </div>
+                <button class="login-btn primary" onclick="loginGuest()">
+                    🎮 JOGAR OFFLINE
+                </button>
+            </div>
+            
+            <!-- FORMULÁRIO ADMIN -->
+            <div id="admin-form" class="login-form" style="display:none;">
+                <div class="form-group">
+                    <label>👑 Senha Admin</label>
+                    <input type="password" id="admin-password" placeholder="Senha secreta">
+                </div>
+                <button class="login-btn primary" onclick="loginAdmin()">
+                    ⚙️ ENTRAR
+                </button>
+            </div>
+            
+            <div class="error-message" id="login-error"></div>
+            <div class="success-message" id="login-success"></div>
+        </div>
     </div>
-
-    <script src="https://cloudflare.com"></script>
-    <script src="https://jsdelivr.net"></script>
-    <script src="https://jsdelivr.net"></script>
-    <script src="js/game.js"></script>
+    
+    <!-- ==================== TELA DO JOGO ==================== -->
+    <div id="game-screen" class="screen">
+        <div id="game-container"></div>
+        
+        <div id="crosshair">
+            <div class="crosshair-line horizontal"></div>
+            <div class="crosshair-line vertical"></div>
+        </div>
+        
+        <div id="hud">
+            <div id="scoreboard">
+                <span>TR: <span id="score-t">0</span></span>
+                <span>⚡ <span id="hud-round">1</span></span>
+                <span>CT: <span id="score-ct">0</span></span>
+            </div>
+            <div id="hud-bottom">
+                <span>💰 <span id="hud-money">1600</span></span>
+                <span id="hud-weapon">AK-47 [30/90]</span>
+                <span>❤️ <span id="hud-hp">100</span></span>
+            </div>
+        </div>
+        
+        <div id="health-bar-container">
+            <div id="health-bar"></div>
+            <span id="health-text">100 HP</span>
+        </div>
+        
+        <div id="armor-bar-container">
+            <div id="armor-bar"></div>
+            <span id="armor-text">0 AP</span>
+        </div>
+        
+        <div id="weapon-slots"></div>
+        <div id="killfeed"></div>
+        
+        <div id="grenade-indicator">
+            <span id="he-grenades">HE: 1</span>
+            <span id="flash-grenades">FLASH: 0</span>
+            <span id="smoke-grenades">SMOKE: 0</span>
+        </div>
+        
+        <div id="ranking-live">
+            <div id="ranking-header">🏆 RANKING <button onclick="toggleRanking()">−</button></div>
+            <div id="ranking-list"></div>
+        </div>
+        
+        <div id="chat-box" class="game-chat"></div>
+        <input type="text" id="chat-input" class="game-chat-input" style="display:none;" placeholder="T para falar..." maxlength="100">
+        
+        <div id="reload-indicator" style="display:none;">
+            <div id="reload-bar"></div>
+            <span>RECARREGANDO...</span>
+        </div>
+        
+        <div id="grenade-power-indicator" style="display:none;">
+            <div id="grenade-power-bar"></div>
+            <span id="grenade-power-text">FORÇA: 0%</span>
+        </div>
+        
+        <div id="settings-panel" style="display:none;">
+            <h2>⚙️ CONFIGURAÇÕES</h2>
+            <div class="setting-item">
+                <label>🎯 Sensibilidade:</label>
+                <input type="range" id="sensitivity-slider" min="0.1" max="2" step="0.1" value="0.5">
+                <span id="sensitivity-value">0.5</span>
+            </div>
+            <div class="setting-item">
+                <label>🎵 Música:</label>
+                <select id="music-setting">
+                    <option value="on">Ligada</option>
+                    <option value="off">Desligada</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label>📻 Rádio:</label>
+                <select id="radio-setting">
+                    <option value="on">Ligado</option>
+                    <option value="off">Desligado</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label>🎯 Mira:</label>
+                <select id="crosshair-setting">
+                    <option value="cross">Cruz (+)</option>
+                    <option value="dot">Ponto (.)</option>
+                    <option value="circle">Círculo (o)</option>
+                    <option value="t">T</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label>🔴 Cor da Mira:</label>
+                <select id="crosshair-color">
+                    <option value="#00ff00">Verde</option>
+                    <option value="#ff0000">Vermelho</option>
+                    <option value="#00ffff">Ciano</option>
+                    <option value="#ffff00">Amarelo</option>
+                </select>
+            </div>
+            <button onclick="toggleSettings()">FECHAR</button>
+        </div>
+        
+        <div id="admin-panel" style="display:none;">
+            <h2>👑 PAINEL ADMIN</h2>
+            <button onclick="createRoom()">🌐 CRIAR SALA</button>
+            <button onclick="showAdminLog()">📝 LOG</button>
+            <button onclick="showSecretChat()">👻 CHAT SECRETO</button>
+        </div>
+        
+        <div id="admin-log" style="display:none;">
+            <h3>📝 LOG DO ADMIN</h3>
+            <div id="log-content"></div>
+            <button onclick="clearAdminLog()">LIMPAR</button>
+            <button onclick="hideAdminLog()">FECHAR</button>
+        </div>
+        
+        <div id="secret-chat" style="display:none;">
+            <h3>👻 CHAT SECRETO</h3>
+            <div id="secret-chat-content"></div>
+            <input type="text" id="secret-chat-input" placeholder="Anotações secretas...">
+            <button onclick="sendSecretMessage()">ANOTAR</button>
+            <button onclick="hideSecretChat()">FECHAR</button>
+        </div>
+        
+        <div id="create-room-form" style="display:none;">
+            <h3>🌐 CRIAR SALA</h3>
+            <div class="form-group">
+                <label>Código da Sala:</label>
+                <input type="text" id="room-code-create" placeholder="Qualquer código...">
+            </div>
+            <div class="form-group">
+                <label>Modo:</label>
+                <select id="room-mode-create">
+                    <option value="deathmatch">Deathmatch</option>
+                    <option value="knife">Faca Apenas</option>
+                    <option value="defuse">Defuse</option>
+                    <option value="tag">Pega-Pega</option>
+                    <option value="zombie">Zumbi</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Bots:</label>
+                <select id="room-bots-create">
+                    <option value="0">0 (sem bots)</option>
+                    <option value="3" selected>3 bots</option>
+                    <option value="5">5 bots</option>
+                    <option value="10">10 bots</option>
+                </select>
+            </div>
+            <button onclick="confirmCreateRoom()">CRIAR</button>
+            <button onclick="hideCreateRoom()">CANCELAR</button>
+        </div>
+        
+        <div id="buy-menu"></div>
+        <div id="pos-debug"></div>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <!-- Game Engine -->
+    <script src="game.js"></script>
 </body>
 </html>
