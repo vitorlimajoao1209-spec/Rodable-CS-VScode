@@ -3,164 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎯 DUST 2 FPS</title>
+    <title>DUST 2</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     
     <!-- ==================== TELA DE LOGIN ==================== -->
     <div id="login-screen" class="screen active">
-        <div class="background-animation"></div>
+        <div class="login-bg"></div>
         
-        <div class="login-container">
+        <div class="login-box">
             <div class="login-logo">
-                <h1>🎯 DUST 2</h1>
-                <p>FPS MULTIPLAYER</p>
-                <div class="version">v2.0</div>
+                <h1>DUST 2</h1>
+                <p>FPS</p>
             </div>
             
             <div class="login-tabs">
-                <button class="tab-btn active" onclick="switchTab('player')">🎮 PLAYER</button>
-                <button class="tab-btn" onclick="switchTab('guest')">👤 CONVIDADO</button>
-                <button class="tab-btn" onclick="switchTab('admin')">👑 ADMIN</button>
+                <button class="tab-btn active" onclick="switchTab('player')">PLAYER</button>
+                <button class="tab-btn" onclick="switchTab('guest')">CONVIDADO</button>
+                <button class="tab-btn" onclick="switchTab('admin')">ADMIN</button>
             </div>
             
-            <!-- FORMULÁRIO PLAYER -->
+            <!-- FORMULARIO PLAYER -->
             <div id="player-form" class="login-form">
                 <div id="login-step-1">
-                    <div class="form-group">
-                        <label>✉️ Email</label>
+                    <div class="input-group">
+                        <label>EMAIL</label>
                         <input type="email" id="player-email" placeholder="seu@email.com">
                     </div>
-                    <div class="form-group">
-                        <label>🔑 Senha</label>
+                    <div class="input-group">
+                        <label>SENHA</label>
                         <input type="password" id="player-password" placeholder="Sua senha">
                     </div>
-                    <button class="login-btn primary" onclick="loginPlayer()">
-                        🚀 ENTRAR
-                    </button>
+                    <button class="btn primary" onclick="loginPlayer()">ENTRAR</button>
                     <div class="login-links">
-                        <a href="#" onclick="showRegister()">📝 Criar conta</a>
-                        <a href="#" onclick="showForgotPassword()">😅 Esqueci a senha</a>
+                        <span onclick="showRegister()">CRIAR CONTA</span>
+                        <span onclick="showForgotPassword()">ESQUECI SENHA</span>
                     </div>
                 </div>
                 
                 <!-- REGISTRO -->
                 <div id="register-step" style="display:none;">
-                    <h3 style="color:#de9b35;">📝 CRIAR CONTA</h3>
-                    <div class="form-group">
-                        <label>👤 Nome de Guerra</label>
-                        <input type="text" id="reg-name" placeholder="Seu nick único" maxlength="20">
+                    <div class="input-group">
+                        <label>NOME</label>
+                        <input type="text" id="reg-name" placeholder="Seu nick">
                     </div>
-                    <div class="form-group">
-                        <label>✉️ Email</label>
+                    <div class="input-group">
+                        <label>EMAIL</label>
                         <input type="email" id="reg-email" placeholder="seu@email.com">
                     </div>
-                    <div class="form-group">
-                        <label>🔑 Senha</label>
-                        <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres">
+                    <div class="input-group">
+                        <label>SENHA</label>
+                        <input type="password" id="reg-password" placeholder="Minimo 6 caracteres">
                     </div>
-                    <div class="form-group">
-                        <label>🔑 Confirmar Senha</label>
+                    <div class="input-group">
+                        <label>CONFIRMAR SENHA</label>
                         <input type="password" id="reg-confirm" placeholder="Repita a senha">
                     </div>
-                    <button class="login-btn primary" onclick="registerPlayer()">
-                        📝 CRIAR CONTA
-                    </button>
-                    <button class="login-btn secondary" onclick="showLogin()">
-                        ⬅️ Voltar
-                    </button>
+                    <button class="btn primary" onclick="registerPlayer()">CRIAR CONTA</button>
+                    <button class="btn secondary" onclick="showLogin()">VOLTAR</button>
                 </div>
                 
-                <!-- VERIFICAÇÃO DE EMAIL -->
+                <!-- VERIFICACAO -->
                 <div id="verify-step" style="display:none;">
-                    <h3 style="color:#de9b35;">✉️ VERIFICAÇÃO</h3>
-                    <p style="color:#aaa; text-align:center;">
-                        Enviamos um código de 6 dígitos para:<br>
-                        <b id="verify-email-display"></b>
-                    </p>
-                    <div class="form-group">
-                        <label>🔢 Código</label>
-                        <input type="text" id="verify-code" placeholder="000000" maxlength="6" style="text-align:center; font-size:24px; letter-spacing:10px;">
+                    <p style="text-align:center;color:#aaa;">Codigo enviado para:</p>
+                    <p style="text-align:center;color:#fff;" id="verify-email-display"></p>
+                    <div class="input-group">
+                        <label>CODIGO</label>
+                        <input type="text" id="verify-code" placeholder="000000" maxlength="6" style="text-align:center;font-size:20px;letter-spacing:8px;">
                     </div>
-                    <button class="login-btn primary" onclick="verifyEmail()">
-                        ✅ CONFIRMAR
-                    </button>
-                    <button class="login-btn secondary" onclick="showLogin()">
-                        ⬅️ Cancelar
-                    </button>
+                    <button class="btn primary" onclick="verifyEmail()">CONFIRMAR</button>
+                    <button class="btn secondary" onclick="showLogin()">CANCELAR</button>
                 </div>
                 
                 <!-- ESQUECEU SENHA -->
                 <div id="forgot-step" style="display:none;">
-                    <h3 style="color:#de9b35;">😅 RECUPERAR SENHA</h3>
-                    <div class="form-group">
-                        <label>✉️ Email cadastrado</label>
+                    <div class="input-group">
+                        <label>EMAIL</label>
                         <input type="email" id="forgot-email" placeholder="seu@email.com">
                     </div>
-                    <button class="login-btn primary" onclick="forgotPassword()">
-                        📧 ENVIAR CÓDIGO
-                    </button>
-                    
-                    <div id="reset-password-section" style="display:none;">
-                        <div class="form-group">
-                            <label>🔢 Código recebido</label>
+                    <button class="btn primary" onclick="forgotPassword()">ENVIAR CODIGO</button>
+                    <div id="reset-section" style="display:none;">
+                        <div class="input-group">
+                            <label>CODIGO</label>
                             <input type="text" id="reset-code" placeholder="000000" maxlength="6">
                         </div>
-                        <div class="form-group">
-                            <label>🔑 Nova Senha</label>
+                        <div class="input-group">
+                            <label>NOVA SENHA</label>
                             <input type="password" id="reset-password" placeholder="Nova senha">
                         </div>
-                        <button class="login-btn primary" onclick="resetPassword()">
-                            🔄 TROCAR SENHA
-                        </button>
+                        <button class="btn primary" onclick="resetPassword()">TROCAR SENHA</button>
                     </div>
-                    
-                    <button class="login-btn secondary" onclick="showLogin()">
-                        ⬅️ Voltar
-                    </button>
+                    <button class="btn secondary" onclick="showLogin()">VOLTAR</button>
                 </div>
             </div>
             
-            <!-- FORMULÁRIO CONVIDADO -->
+            <!-- FORMULARIO CONVIDADO -->
             <div id="guest-form" class="login-form" style="display:none;">
-                <p style="color:#aaa; text-align:center;">
-                    👤 Modo offline contra bots<br>
-                    Sem chat, sem multiplayer
-                </p>
-                <div class="form-group">
-                    <label>🎯 Dificuldade</label>
+                <p style="text-align:center;color:#aaa;">Modo offline contra bots</p>
+                <div class="input-group">
+                    <label>DIFICULDADE</label>
                     <select id="guest-difficulty">
-                        <option value="easy">Fácil (3 bots)</option>
+                        <option value="easy">Facil (3 bots)</option>
                         <option value="normal" selected>Normal (5 bots)</option>
-                        <option value="hard">Difícil (10 bots)</option>
+                        <option value="hard">Dificil (10 bots)</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>🎮 Modo</label>
-                    <select id="guest-mode">
-                        <option value="deathmatch">Deathmatch</option>
-                        <option value="defuse">Defuse</option>
-                    </select>
-                </div>
-                <button class="login-btn primary" onclick="loginGuest()">
-                    🎮 JOGAR OFFLINE
-                </button>
+                <button class="btn primary" onclick="loginGuest()">JOGAR</button>
             </div>
             
-            <!-- FORMULÁRIO ADMIN -->
+            <!-- FORMULARIO ADMIN -->
             <div id="admin-form" class="login-form" style="display:none;">
-                <div class="form-group">
-                    <label>👑 Senha Admin</label>
-                    <input type="password" id="admin-password" placeholder="Senha secreta">
+                <div class="input-group">
+                    <label>SENHA</label>
+                    <input type="password" id="admin-password" placeholder="Senha admin">
                 </div>
-                <button class="login-btn primary" onclick="loginAdmin()">
-                    ⚙️ ENTRAR
-                </button>
+                <button class="btn primary" onclick="loginAdmin()">ENTRAR</button>
             </div>
             
-            <div class="error-message" id="login-error"></div>
-            <div class="success-message" id="login-success"></div>
+            <div class="message error" id="login-error"></div>
+            <div class="message success" id="login-success"></div>
+        </div>
+    </div>
+    
+    <!-- ==================== TELA DE MENU ==================== -->
+    <div id="menu-screen" class="screen">
+        <div class="menu-bg"></div>
+        
+        <!-- MENU ADMIN -->
+        <div id="admin-menu" class="menu-box" style="display:none;">
+            <h2>ADMINISTRACAO</h2>
+            <div class="menu-user">
+                <span id="admin-name-display"></span>
+                <span class="badge">ADMIN</span>
+            </div>
+            <div class="menu-buttons">
+                <button class="menu-btn" onclick="startGame()">JOGAR OFFLINE</button>
+                <button class="menu-btn" onclick="createRoom()">CRIAR SALA</button>
+                <button class="menu-btn" onclick="showBotsMenu()">GERENCIAR BOTS</button>
+                <button class="menu-btn" onclick="showBanMenu()">BANIMENTOS</button>
+                <button class="menu-btn" onclick="showAdminsMenu()">ADMINS</button>
+                <button class="menu-btn" onclick="showStats()">ESTATISTICAS</button>
+                <button class="menu-btn" onclick="showAdminLog()">LOGS</button>
+                <button class="menu-btn" onclick="showSecretChat()">CHAT SECRETO</button>
+                <button class="menu-btn" onclick="showSettings()">CONFIGURACOES</button>
+                <button class="menu-btn" onclick="logout()">SAIR</button>
+            </div>
+        </div>
+        
+        <!-- MENU PLAYER -->
+        <div id="player-menu" class="menu-box" style="display:none;">
+            <h2>DUST 2</h2>
+            <div class="menu-user">
+                <span id="player-name-display"></span>
+                <span id="player-rank-display" class="rank"></span>
+            </div>
+            <div class="menu-buttons">
+                <button class="menu-btn" onclick="startGame()">JOGAR OFFLINE</button>
+                <button class="menu-btn" onclick="joinRoom()">ENTRAR EM SALA</button>
+                <button class="menu-btn" onclick="showSettings()">CONFIGURACOES</button>
+                <button class="menu-btn" onclick="showProfile()">PERFIL</button>
+                <button class="menu-btn" onclick="logout()">SAIR</button>
+            </div>
+        </div>
+        
+        <!-- MENU CONVIDADO -->
+        <div id="guest-menu" class="menu-box" style="display:none;">
+            <h2>DUST 2</h2>
+            <div class="menu-user">
+                <span id="guest-name-display"></span>
+                <span class="badge">CONVIDADO</span>
+            </div>
+            <div class="menu-buttons">
+                <button class="menu-btn" onclick="startGame()">JOGAR OFFLINE</button>
+                <button class="menu-btn" onclick="showSettings()">CONFIGURACOES</button>
+                <button class="menu-btn" onclick="logout()">SAIR</button>
+            </div>
         </div>
     </div>
     
@@ -169,49 +187,48 @@
         <div id="game-container"></div>
         
         <div id="crosshair">
-            <div class="crosshair-line horizontal"></div>
-            <div class="crosshair-line vertical"></div>
+            <div class="crosshair-line h"></div>
+            <div class="crosshair-line v"></div>
         </div>
         
         <div id="hud">
             <div id="scoreboard">
-                <span>TR: <span id="score-t">0</span></span>
-                <span>⚡ <span id="hud-round">1</span></span>
-                <span>CT: <span id="score-ct">0</span></span>
+                <span>TR <span id="score-t">0</span></span>
+                <span>ROUND <span id="hud-round">1</span></span>
+                <span>CT <span id="score-ct">0</span></span>
             </div>
             <div id="hud-bottom">
-                <span>💰 <span id="hud-money">1600</span></span>
+                <span id="hud-money">$1600</span>
                 <span id="hud-weapon">AK-47 [30/90]</span>
-                <span>❤️ <span id="hud-hp">100</span></span>
+                <span id="hud-hp">100 HP</span>
             </div>
         </div>
         
         <div id="health-bar-container">
             <div id="health-bar"></div>
-            <span id="health-text">100 HP</span>
+            <span id="health-text">100</span>
         </div>
         
         <div id="armor-bar-container">
             <div id="armor-bar"></div>
-            <span id="armor-text">0 AP</span>
+            <span id="armor-text">0</span>
         </div>
         
         <div id="weapon-slots"></div>
         <div id="killfeed"></div>
-        
         <div id="grenade-indicator">
-            <span id="he-grenades">HE: 1</span>
-            <span id="flash-grenades">FLASH: 0</span>
-            <span id="smoke-grenades">SMOKE: 0</span>
+            <span>HE: 1</span>
+            <span>FLASH: 0</span>
+            <span>SMOKE: 0</span>
         </div>
         
         <div id="ranking-live">
-            <div id="ranking-header">🏆 RANKING <button onclick="toggleRanking()">−</button></div>
+            <div id="ranking-header">RANKING <button onclick="toggleRanking()">-</button></div>
             <div id="ranking-list"></div>
         </div>
         
         <div id="chat-box" class="game-chat"></div>
-        <input type="text" id="chat-input" class="game-chat-input" style="display:none;" placeholder="T para falar..." maxlength="100">
+        <input type="text" id="chat-input" class="game-chat-input" style="display:none;" placeholder="T para falar...">
         
         <div id="reload-indicator" style="display:none;">
             <div id="reload-bar"></div>
@@ -220,96 +237,88 @@
         
         <div id="grenade-power-indicator" style="display:none;">
             <div id="grenade-power-bar"></div>
-            <span id="grenade-power-text">FORÇA: 0%</span>
+            <span id="grenade-power-text">FORCA: 0%</span>
         </div>
         
         <div id="settings-panel" style="display:none;">
-            <h2>⚙️ CONFIGURAÇÕES</h2>
+            <h2>CONFIGURACOES</h2>
             <div class="setting-item">
-                <label>🎯 Sensibilidade:</label>
+                <span>Musica</span>
+                <select id="music-setting"><option value="on">LIGADA</option><option value="off">DESLIGADA</option></select>
+            </div>
+            <div class="setting-item">
+                <span>Radio</span>
+                <select id="radio-setting"><option value="on">LIGADO</option><option value="off">DESLIGADO</option></select>
+            </div>
+            <div class="setting-item">
+                <span>Sensibilidade</span>
                 <input type="range" id="sensitivity-slider" min="0.1" max="2" step="0.1" value="0.5">
                 <span id="sensitivity-value">0.5</span>
             </div>
             <div class="setting-item">
-                <label>🎵 Música:</label>
-                <select id="music-setting">
-                    <option value="on">Ligada</option>
-                    <option value="off">Desligada</option>
-                </select>
-            </div>
-            <div class="setting-item">
-                <label>📻 Rádio:</label>
-                <select id="radio-setting">
-                    <option value="on">Ligado</option>
-                    <option value="off">Desligado</option>
-                </select>
-            </div>
-            <div class="setting-item">
-                <label>🎯 Mira:</label>
+                <span>Mira</span>
                 <select id="crosshair-setting">
-                    <option value="cross">Cruz (+)</option>
-                    <option value="dot">Ponto (.)</option>
-                    <option value="circle">Círculo (o)</option>
-                    <option value="t">T</option>
+                    <option value="cross">CRUZ</option>
+                    <option value="dot">PONTO</option>
+                    <option value="circle">CIRCULO</option>
                 </select>
             </div>
             <div class="setting-item">
-                <label>🔴 Cor da Mira:</label>
+                <span>Cor Mira</span>
                 <select id="crosshair-color">
-                    <option value="#00ff00">Verde</option>
-                    <option value="#ff0000">Vermelho</option>
-                    <option value="#00ffff">Ciano</option>
-                    <option value="#ffff00">Amarelo</option>
+                    <option value="#00ff00">VERDE</option>
+                    <option value="#ff0000">VERMELHO</option>
+                    <option value="#00ffff">CIANO</option>
                 </select>
             </div>
             <button onclick="toggleSettings()">FECHAR</button>
         </div>
         
         <div id="admin-panel" style="display:none;">
-            <h2>👑 PAINEL ADMIN</h2>
-            <button onclick="createRoom()">🌐 CRIAR SALA</button>
-            <button onclick="showAdminLog()">📝 LOG</button>
-            <button onclick="showSecretChat()">👻 CHAT SECRETO</button>
+            <h2>ADMIN</h2>
+            <button onclick="showCreateRoom()">CRIAR SALA</button>
+            <button onclick="showAdminLog()">LOGS</button>
+            <button onclick="showSecretChat()">CHAT SECRETO</button>
+            <button onclick="toggleAdminPanel()">FECHAR</button>
         </div>
         
         <div id="admin-log" style="display:none;">
-            <h3>📝 LOG DO ADMIN</h3>
+            <h3>LOGS</h3>
             <div id="log-content"></div>
             <button onclick="clearAdminLog()">LIMPAR</button>
-            <button onclick="hideAdminLog()">FECHAR</button>
+            <button onclick="showAdminLog()">FECHAR</button>
         </div>
         
         <div id="secret-chat" style="display:none;">
-            <h3>👻 CHAT SECRETO</h3>
+            <h3>CHAT SECRETO</h3>
             <div id="secret-chat-content"></div>
-            <input type="text" id="secret-chat-input" placeholder="Anotações secretas...">
+            <input type="text" id="secret-chat-input" placeholder="Anotacoes...">
             <button onclick="sendSecretMessage()">ANOTAR</button>
-            <button onclick="hideSecretChat()">FECHAR</button>
+            <button onclick="showSecretChat()">FECHAR</button>
         </div>
         
         <div id="create-room-form" style="display:none;">
-            <h3>🌐 CRIAR SALA</h3>
-            <div class="form-group">
-                <label>Código da Sala:</label>
-                <input type="text" id="room-code-create" placeholder="Qualquer código...">
+            <h3>CRIAR SALA</h3>
+            <div class="input-group">
+                <label>CODIGO</label>
+                <input type="text" id="room-code-create" placeholder="Qualquer codigo...">
             </div>
-            <div class="form-group">
-                <label>Modo:</label>
+            <div class="input-group">
+                <label>MODO</label>
                 <select id="room-mode-create">
-                    <option value="deathmatch">Deathmatch</option>
-                    <option value="knife">Faca Apenas</option>
-                    <option value="defuse">Defuse</option>
-                    <option value="tag">Pega-Pega</option>
-                    <option value="zombie">Zumbi</option>
+                    <option value="deathmatch">DEATHMATCH</option>
+                    <option value="defuse">DEFUSE</option>
+                    <option value="knife">FACA</option>
+                    <option value="zombie">ZUMBI</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label>Bots:</label>
+            <div class="input-group">
+                <label>BOTS</label>
                 <select id="room-bots-create">
-                    <option value="0">0 (sem bots)</option>
-                    <option value="3" selected>3 bots</option>
-                    <option value="5">5 bots</option>
-                    <option value="10">10 bots</option>
+                    <option value="0">0</option>
+                    <option value="3" selected>3</option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
                 </select>
             </div>
             <button onclick="confirmCreateRoom()">CRIAR</button>
@@ -320,7 +329,7 @@
         <div id="pos-debug"></div>
     </div>
     
-    <!-- Firebase SDK -->
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
     
@@ -329,7 +338,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     
-    <!-- Game Engine -->
+    <!-- Game -->
     <script src="game.js"></script>
 </body>
 </html>
