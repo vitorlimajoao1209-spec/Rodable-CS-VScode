@@ -9,6 +9,9 @@ let bombTimer = null;
 let hasBomb = true;
 let lastShot = 0;
 let isFrozen = true;
+let isFlyMode = false; // Controla se o noclip/modo voar está ativo
+let isChatOpen = false; // Controla se o chat está aberto
+
 
 // Movimentação do Jogador
 let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
@@ -385,25 +388,67 @@ function createBuyMenu() {
 
 function animate() {
     requestAnimationFrame(animate);
-    const time = performance.now(); const delta = (time - prevTime) / 1000;
+
+    const time = performance.now();
+    const delta = (time - prevTime) / 1000;
+
+    // Atualização física das partículas de faíscas na tela
     updateParticles(delta);
 
-    if (isLocked === true) {
-        velocity.x -= velocity.x * 10.0 * delta; velocity.z -= velocity.z * 10.0 * delta; velocity.y -= 9.8 * 30.0 * delta; 
-        direction.z = Number(moveForward) - Number(moveBackward); direction.x = Number(moveRight) - Number(moveLeft); direction.normalize();
+    // ==================== BLOCO B (FÍSICA E MOVIMENTO LIVRE) ====================
+    velocity.x -= velocity.x * 10.0 * delta;
+    velocity.z -= velocity.z * 10.0 * delta;
+    
+    if (isFlyMode) {
+        velocity.y -= velocity.y * 10.0 * delta; 
+        if (moveForward) velocity.z -= 400.0 * delta;
+        if (moveBackward) velocity.z += 400.0 * delta;
+    } else {
+        velocity.y -= 9.8 * 30.0 * delta; 
+        direction.z = Number(moveForward) - Number(moveBackward);
+        direction.x = Number(moveRight) - Number(moveLeft);
+        direction.normalize();
         const speedModifier = isWalkingSilently ? 180.0 : 400.0;
         if (moveForward || moveBackward) velocity.z -= direction.z * speedModifier * delta;
         if (moveLeft || moveRight) velocity.x -= direction.x * speedModifier * delta;
+    }
 
-        const oldPosition = camera.position.clone();
-        controls.moveRight(-velocity.x * delta); controls.moveForward(-velocity.z * delta); controls.getObject().position.y += (velocity.y * delta);
+    const oldPosition = camera.position.clone();
+    controls.moveRight(-velocity.x * delta);
+    controls.moveForward(-velocity.z * delta);
+    
+    if (isFlyMode) {
+        const camDir = new THREE.Vector3();
+        camera.getWorldDirection(camDir);
+        if (moveForward) camera.position.addScaledVector(camDir, 200.0 * delta);
+        if (moveBackward) camera.position.addScaledVector(camDir, -200.0 * delta);
+    } else {
+        controls.getObject().position.y += (velocity.y * delta);
+    }
 
+    if (!isFlyMode) {
         const playerRay = new THREE.Raycaster(oldPosition, direction, 0, 3);
         const colisoes = playerRay.intersectObjects(mapColliders, true);
         if (colisoes.length > 0) { camera.position.x = oldPosition.x; camera.position.z = oldPosition.z; }
         if (controls.getObject().position.y < 14) { velocity.y = 0; controls.getObject().position.y = 14; canJump = true; }
     }
-    prevTime = time; botAIAndAttackLogic();
-    if (camera.rotation.x < 0) camera.rotation.x *= 0.9;
-    renderer.render(scene, camera);
+    
+    // Atualiza o painel de debug com as coordenadas
+    const debugEl = document.getElementById('pos-debug');
+    if (debugEl) {
+        debugEl.innerText = `X: ${camera.position.x.toFixed(2)} | Y: ${camera.position.y.toFixed(2)} | Z: ${camera.position.z.toFixed(2)} ${isFlyMode ? '[VOANDO]' : ''}`;
+    }
+
+    prevTime = time;
+
+    // ==================== BLOCO C (RENDERING E IA DOS BOTS) ====================
+    botAIAndAttackLogic(); 
+
+    if (camera.rotation.x < 0) {
+        camera.rotation.x *= 0.9; 
+    }
+
+    renderer.render(scene, camera); 
+}
+prevTime = time;
 }
