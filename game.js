@@ -1328,7 +1328,7 @@ function loginGuest() {
 function loginAdmin() {
     const pass = document.getElementById('admin-password').value;
     
-    if (pass === 'BiteloeOlina') {
+    if (pass === 'Bitelo) {
         currentPlayer = { name: 'DESENVOLVEDOR', type: 'dev' };
         adminMode = true;
         showMenu('admin');
