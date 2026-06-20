@@ -201,51 +201,36 @@ function setupWeapons() {
 }
 
 function createMap() {
-    // Iluminação básica
+    scene.background = new THREE.Color(0x87CEEB);
     scene.add(new THREE.AmbientLight(0xffffff, 0.6));
     const sun = new THREE.DirectionalLight(0xffeedd, 0.8);
     sun.position.set(50, 100, 50);
     scene.add(sun);
     
-    // Chão simples (garantido)
-    const floor = new THREE.Mesh(
-        new THREE.PlaneGeometry(200, 200),
-        new THREE.MeshLambertMaterial({ color: 0x888866 })
-    );
+    // Chão garantido
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshLambertMaterial({ color: 0xd4b896 }));
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = 13;
-    floor.receiveShadow = true;
     scene.add(floor);
     mapColliders.push(floor);
     
-    // Tentar carregar mapa 3D
+    // Carregar mapa 3D
     const loader = new THREE.GLTFLoader();
-    loader.load('./dust2.glb', 
+    loader.load('dust2.glb', 
         (gltf) => {
-            // Sucesso! Mapa carregado
             const mapa = gltf.scene;
             mapa.scale.set(1.25, 1.25, 1.25);
             mapa.position.y = -6;
             scene.add(mapa);
-            
-            // Adicionar colisores
-            mapa.traverse((child) => {
-                if (child.isMesh) {
-                    mapColliders.push(child);
-                }
-            });
-            
-            console.log('✅ Mapa Dust 2 carregado!');
+            mapa.traverse((child) => { if (child.isMesh) mapColliders.push(child); });
+            console.log('✅ Mapa carregado!');
         },
         (progress) => {
-            // Carregando...
             const pct = Math.round((progress.loaded / progress.total) * 100);
-            console.log('Carregando mapa: ' + pct + '%');
+            console.log('📦 ' + pct + '%');
         },
         (error) => {
-            // Erro ao carregar
-            console.log('❌ Mapa não encontrado, usando mapa básico');
-            createSimpleWalls();
+            console.log('❌ Erro no mapa');
         }
     );
 }
