@@ -271,7 +271,7 @@
                     <option value="#00ffff">CIANO</option>
                 </select>
             </div>
-            <button onclick="toggleSettings()">FECHAR</button>
+            <button onclick="window.location.reload()">FECHAR</button>
         </div>
         
         <div id="admin-panel" style="display:none;">
@@ -279,14 +279,14 @@
             <button onclick="showCreateRoom()">CRIAR SALA</button>
             <button onclick="showAdminLog()">LOGS</button>
             <button onclick="showSecretChat()">CHAT SECRETO</button>
-            <button onclick="toggleAdminPanel()">FECHAR</button>
+            <button onclick="window.location.reload()">FECHAR</button>
         </div>
         
         <div id="admin-log" style="display:none;">
             <h3>LOGS</h3>
             <div id="log-content"></div>
             <button onclick="clearAdminLog()">LIMPAR</button>
-            <button onclick="showAdminLog()">FECHAR</button>
+            <button onclick="window.location.reload()">FECHAR</button>
         </div>
         
         <div id="secret-chat" style="display:none;">
@@ -294,7 +294,7 @@
             <div id="secret-chat-content"></div>
             <input type="text" id="secret-chat-input" placeholder="Anotacoes...">
             <button onclick="sendSecretMessage()">ANOTAR</button>
-            <button onclick="showSecretChat()">FECHAR</button>
+            <button onclick="window.location.reload()">FECHAR</button>
         </div>
         
         <div id="create-room-form" style="display:none;">
