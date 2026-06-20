@@ -201,30 +201,79 @@ function setupWeapons() {
 }
 
 function createMap() {
-    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    // Iluminação básica
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
     const sun = new THREE.DirectionalLight(0xffeedd, 0.8);
     sun.position.set(50, 100, 50);
     scene.add(sun);
     
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshLambertMaterial({ color: 0x888866 }));
+    // Chão simples (garantido)
+    const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(200, 200),
+        new THREE.MeshLambertMaterial({ color: 0x888866 })
+    );
     floor.rotation.x = -Math.PI / 2;
-    floor.position.y = 14;
+    floor.position.y = 13;
+    floor.receiveShadow = true;
     scene.add(floor);
     mapColliders.push(floor);
     
+    // Tentar carregar mapa 3D
+    const loader = new THREE.GLTFLoader();
+    loader.load('dust2.glb', 
+        (gltf) => {
+            // Sucesso! Mapa carregado
+            const mapa = gltf.scene;
+            mapa.scale.set(1.25, 1.25, 1.25);
+            mapa.position.y = -6;
+            scene.add(mapa);
+            
+            // Adicionar colisores
+            mapa.traverse((child) => {
+                if (child.isMesh) {
+                    mapColliders.push(child);
+                }
+            });
+            
+            console.log('✅ Mapa Dust 2 carregado!');
+        },
+        (progress) => {
+            // Carregando...
+            const pct = Math.round((progress.loaded / progress.total) * 100);
+            console.log('Carregando mapa: ' + pct + '%');
+        },
+        (error) => {
+            // Erro ao carregar
+            console.log('❌ Mapa não encontrado, usando mapa básico');
+            createSimpleWalls();
+        }
+    );
+}
+
+function createSimpleWalls() {
+    // Paredes básicas se o .glb falhar
     const wallMat = new THREE.MeshLambertMaterial({ color: 0x996644 });
+    
     const walls = [
         { pos: [0, 17, -45], size: [80, 6, 2] },
         { pos: [0, 17, 45], size: [80, 6, 2] },
         { pos: [-40, 17, 0], size: [2, 6, 90] },
-        { pos: [40, 17, 0], size: [2, 6, 90] }
+        { pos: [40, 17, 0], size: [2, 6, 90] },
+        // Paredes internas (tipo Dust 2)
+        { pos: [-15, 16, -20], size: [15, 4, 2] },
+        { pos: [15, 16, -20], size: [15, 4, 2] },
+        { pos: [-15, 16, 20], size: [15, 4, 2] },
+        { pos: [15, 16, 20], size: [15, 4, 2] }
     ];
+    
     walls.forEach(w => {
         const wall = new THREE.Mesh(new THREE.BoxGeometry(...w.size), wallMat);
         wall.position.set(...w.pos);
         scene.add(wall);
         mapColliders.push(wall);
     });
+    
+    console.log('✅ Mapa básico criado');
 }
 
 // ==================== BOTS ====================
