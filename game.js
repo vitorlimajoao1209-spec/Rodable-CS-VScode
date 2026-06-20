@@ -1326,23 +1326,35 @@ function loginGuest() {
 }
 
 function loginAdmin() {
+function loginAdmin() {
     const pass = document.getElementById('admin-password').value;
     
-    if (pass === 'Bitelo) {
+    // Senha do Desenvolvedor
+    if (pass === 'BiteloeOlina') {
         currentPlayer = { name: 'DESENVOLVEDOR', type: 'dev' };
         adminMode = true;
         showMenu('admin');
-    } else {
-        const admins = JSON.parse(localStorage.getItem('dust2_admins') || '{}');
-        const admin = Object.values(admins).find(a => a.password === pass);
-        if (admin) {
-            if (admin.expires && Date.now() > admin.expires) { showError('ADMIN EXPIRADO'); return; }
-            currentPlayer = { name: admin.name, type: 'admin' };
-            adminMode = true;
-            showMenu('admin');
-        } else {
-            showError('SENHA INCORRETA');
+        return;
+    }
+    
+    // Verificar admins cadastrados
+    const admins = JSON.parse(localStorage.getItem('dust2_admins') || '{}');
+    const admin = Object.values(admins).find(a => a.password === pass);
+    
+    if (admin) {
+        if (admin.expires && Date.now() > admin.expires) {
+            showError('ADMIN EXPIRADO');
+            return;
         }
+        currentPlayer = { name: admin.name, type: 'admin' };
+        adminMode = true;
+        showMenu('admin');
+        return;
+    }
+    
+    // Se não for nenhum
+    showError('SENHA INCORRETA');
+}
     }
 }
 
