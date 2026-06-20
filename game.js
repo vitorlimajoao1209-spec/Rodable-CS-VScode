@@ -1,4 +1,4 @@
-// ==================== DUST 2 FPS - MOTOR CORRIGIDO ====================
+// ==================== DUST 2 FPS - MOTOR COMPLETO ====================
 
 // Three.js
 let scene, camera, renderer, controls;
@@ -78,7 +78,7 @@ let playerStats = { kills: 0, deaths: 0, headshots: 0, knifes: 0, bombsPlanted: 
 let killStreak = 0;
 let lastKillTime = 0;
 
-// ==================== COORDENADAS CORRIGIDAS ====================
+// ==================== COORDENADAS ====================
 const CHECKPOINTS = {
     TR_SPAWN: new THREE.Vector3(0, 16, -40),
     CT_SPAWN: new THREE.Vector3(0, 16, 40),
@@ -222,13 +222,11 @@ function setupWeapons() {
 }
 
 function createMap() {
-    // Iluminacao
     scene.add(new THREE.AmbientLight(0x888888, 0.6));
     const sun = new THREE.DirectionalLight(0xffeedd, 0.8);
     sun.position.set(50, 100, 50);
     scene.add(sun);
     
-    // Chao
     const floorGeom = new THREE.PlaneGeometry(200, 200);
     const floorMat = new THREE.MeshLambertMaterial({ color: 0x888866 });
     const floor = new THREE.Mesh(floorGeom, floorMat);
@@ -238,7 +236,6 @@ function createMap() {
     scene.add(floor);
     mapColliders.push(floor);
     
-    // Paredes
     const wallMat = new THREE.MeshLambertMaterial({ color: 0x996644 });
     const walls = [
         { pos: [0, 17, -45], size: [80, 6, 2] },
@@ -254,7 +251,6 @@ function createMap() {
         mapColliders.push(wall);
     });
     
-    // Bombsites
     const siteMat = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.2 });
     [CHECKPOINTS.BOMB_A, CHECKPOINTS.BOMB_B].forEach(site => {
         const marker = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 0.1, 16), siteMat);
@@ -264,7 +260,6 @@ function createMap() {
     });
 }
 
-// ==================== CONTINUA NA PARTE 2 ====================
 // ==================== BOTS ====================
 function createBots() {
     bots.forEach(b => scene.remove(b));
@@ -275,28 +270,17 @@ function createBots() {
     for (let i = 0; i < botCount; i++) {
         const bot = new THREE.Group();
         
-        const head = new THREE.Mesh(
-            new THREE.SphereGeometry(0.5, 8, 8),
-            new THREE.MeshLambertMaterial({ color: 0xcc6666 })
-        );
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), new THREE.MeshLambertMaterial({ color: 0xcc6666 }));
         head.position.y = 2.1;
         head.name = "HEADSHOT";
         
-        const chest = new THREE.Mesh(
-            new THREE.BoxGeometry(1.6, 2.2, 1.2),
-            new THREE.MeshLambertMaterial({ color: 0x883333 })
-        );
+        const chest = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.2, 1.2), new THREE.MeshLambertMaterial({ color: 0x883333 }));
         chest.position.y = 0.8;
         
-        const legs = new THREE.Mesh(
-            new THREE.BoxGeometry(1.4, 1.5, 1.0),
-            new THREE.MeshLambertMaterial({ color: 0x662222 })
-        );
+        const legs = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.5, 1.0), new THREE.MeshLambertMaterial({ color: 0x662222 }));
         legs.position.y = -1.0;
         
-        bot.add(head);
-        bot.add(chest);
-        bot.add(legs);
+        bot.add(head); bot.add(chest); bot.add(legs);
         
         bot.position.copy(CHECKPOINTS.CT_SPAWN);
         bot.position.x += (Math.random() - 0.5) * 20;
@@ -304,14 +288,9 @@ function createBots() {
         bot.position.y = 15;
         
         bot.userData = {
-            health: 100,
-            name: 'Bot_' + (i + 1),
-            team: 'CT',
-            lastShotTime: 0,
-            targetSite: i % 2 === 0 ? CHECKPOINTS.BOMB_A : CHECKPOINTS.BOMB_B,
-            currentState: 'PATROL',
-            reactionTime: 800 + Math.random() * 1200,
-            accuracy: 0.3
+            health: 100, name: 'Bot_' + (i + 1), team: 'CT',
+            lastShotTime: 0, targetSite: i % 2 === 0 ? CHECKPOINTS.BOMB_A : CHECKPOINTS.BOMB_B,
+            currentState: 'PATROL', reactionTime: 800 + Math.random() * 1200, accuracy: 0.3
         };
         
         scene.add(bot);
@@ -323,10 +302,7 @@ function createBots() {
 function shoot() {
     if (isFrozen || isDead || isSwitchingWeapon || isReloading) return;
     if (currentSlot >= 4) return;
-    if (!currentWeapon || currentWeapon.ammo <= 0) {
-        addKillFeed("SEM MUNICAO", "");
-        return;
-    }
+    if (!currentWeapon || currentWeapon.ammo <= 0) { addKillFeed("SEM MUNICAO", ""); return; }
     if (Date.now() - lastShot < currentWeapon.fireRate) return;
     
     lastShot = Date.now();
@@ -345,25 +321,13 @@ function shoot() {
         createImpactParticles(hit.point);
         
         let target = hit.object;
-        while (target && !target.userData.health) {
-            target = target.parent;
-        }
+        while (target && !target.userData.health) target = target.parent;
         
         if (target && target.userData && target.userData.health !== undefined) {
             let damage = currentWeapon.damage;
-            
-            if (hit.object.name === "HEADSHOT") {
-                damage *= 4;
-                playSound('headshot');
-                addKillFeed("HEADSHOT", target.userData.name);
-                playerStats.headshots++;
-            }
-            
+            if (hit.object.name === "HEADSHOT") { damage *= 4; playSound('headshot'); addKillFeed("HEADSHOT", target.userData.name); playerStats.headshots++; }
             target.userData.health -= damage;
-            
-            if (target.userData.health <= 0) {
-                handleKill(target);
-            }
+            if (target.userData.health <= 0) handleKill(target);
         }
     }
 }
@@ -371,117 +335,73 @@ function shoot() {
 function handleKill(bot) {
     scene.remove(bot);
     bots = bots.filter(b => b !== bot);
-    
     money += 300;
     playerStats.kills++;
     killStreak++;
     lastKillTime = Date.now();
-    
     addKillFeed("ELIMINOU", bot.userData.name);
     updateHUD();
     updateRanking();
     checkRoundEnd();
 }
 
-// ==================== DANO NO JOGADOR ====================
+// ==================== DANO ====================
 function takeDamage(amount) {
     if (isDead || godMode) return;
-    
     let damage = amount;
-    
     if (playerArmor > 0) {
         const armorRatio = hasHelmet ? 0.7 : 0.5;
         const armorDmg = Math.floor(damage * armorRatio);
-        if (playerArmor >= armorDmg) {
-            playerArmor -= armorDmg;
-            damage -= armorDmg;
-        } else {
-            damage -= playerArmor;
-            playerArmor = 0;
-        }
+        if (playerArmor >= armorDmg) { playerArmor -= armorDmg; damage -= armorDmg; }
+        else { damage -= playerArmor; playerArmor = 0; }
     }
-    
     playerHP -= Math.floor(damage);
-    
     const overlay = document.createElement('div');
     overlay.className = 'damage-overlay';
     document.body.appendChild(overlay);
     setTimeout(() => overlay.remove(), 300);
-    
-    updateHUD();
-    updateHealthBars();
-    
-    if (playerHP <= 0) {
-        playerHP = 0;
-        playerDeath();
-    }
+    updateHUD(); updateHealthBars();
+    if (playerHP <= 0) { playerHP = 0; playerDeath(); }
 }
 
 function playerDeath() {
-    isDead = true;
-    killStreak = 0;
-    playerStats.deaths++;
-    
+    isDead = true; killStreak = 0; playerStats.deaths++;
     const death = document.createElement('div');
-    death.className = 'death-screen';
-    death.textContent = 'MORTO';
+    death.className = 'death-screen'; death.textContent = 'MORTO';
     document.body.appendChild(death);
-    
     setTimeout(() => {
-        death.remove();
-        playerHP = 100;
-        playerArmor = 0;
-        isDead = false;
-        camera.position.copy(CHECKPOINTS.TR_SPAWN);
-        velocity.set(0, 0, 0);
-        money = Math.floor(money * 0.7);
-        updateHUD();
-        updateHealthBars();
+        death.remove(); playerHP = 100; playerArmor = 0; isDead = false;
+        camera.position.copy(CHECKPOINTS.TR_SPAWN); velocity.set(0, 0, 0);
+        money = Math.floor(money * 0.7); updateHUD(); updateHealthBars();
     }, 2500);
 }
 
-// ==================== IA DOS BOTS ====================
+// ==================== IA ====================
 function botAI() {
     if (!isLocked || isFrozen || isDead) return;
     const now = Date.now();
-    
     bots.forEach(bot => {
         const dist = bot.position.distanceTo(camera.position);
         let canSee = false;
-        
         if (dist < 100) {
             const ray = new THREE.Raycaster();
             const dir = new THREE.Vector3().subVectors(camera.position, bot.position).normalize();
             ray.set(bot.position, dir);
             const hits = ray.intersectObjects(mapColliders, true);
-            
-            if (hits.length === 0 || hits[0].distance > dist) {
-                canSee = true;
-                bot.userData.currentState = 'ATTACK';
-            }
+            if (hits.length === 0 || hits[0].distance > dist) { canSee = true; bot.userData.currentState = 'ATTACK'; }
         }
-        
         if (bot.userData.currentState === 'ATTACK' && canSee) {
             bot.lookAt(camera.position);
-            
             if (now - bot.userData.lastShotTime > bot.userData.reactionTime) {
-                bot.userData.lastShotTime = now;
-                playSound('shoot');
-                
-                if (Math.random() < bot.userData.accuracy) {
-                    takeDamage(8 + Math.floor(Math.random() * 15));
-                }
+                bot.userData.lastShotTime = now; playSound('shoot');
+                if (Math.random() < bot.userData.accuracy) takeDamage(8 + Math.floor(Math.random() * 15));
             }
         } else {
             bot.userData.currentState = 'PATROL';
             const target = bot.userData.targetSite;
             const move = new THREE.Vector3().subVectors(target, bot.position);
-            move.y = 0;
-            move.normalize();
-            
-            if (bot.position.distanceTo(target) > 3) {
-                bot.position.addScaledVector(move, 0.08);
-            }
+            move.y = 0; move.normalize();
+            if (bot.position.distanceTo(target) > 3) bot.position.addScaledVector(move, 0.08);
         }
     });
 }
@@ -489,70 +409,33 @@ function botAI() {
 // ==================== GRANADAS ====================
 class Grenade {
     constructor(pos, dir, type, power) {
-        this.mesh = new THREE.Mesh(
-            new THREE.SphereGeometry(0.2, 8, 8),
-            new THREE.MeshBasicMaterial({ color: type === 'HE' ? 0x00ff00 : 0xffffff })
-        );
+        this.mesh = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color: type === 'HE' ? 0x00ff00 : 0xffffff }));
         this.mesh.position.copy(pos);
         this.type = type;
-        
         const speed = 8 * (0.5 + power * 1.5);
         this.velocity = dir.clone().multiplyScalar(speed);
         this.velocity.y += 5;
-        
         this.time = Date.now();
         this.fuse = 3000;
         this.exploded = false;
-        
         scene.add(this.mesh);
     }
-    
     update() {
         if (this.exploded) return false;
-        
         this.velocity.y -= 0.4;
         this.mesh.position.add(this.velocity.clone().multiplyScalar(0.08));
-        
-        if (this.mesh.position.y < 14) {
-            this.mesh.position.y = 14;
-            this.velocity.y *= -0.3;
-            this.velocity.x *= 0.8;
-            this.velocity.z *= 0.8;
-        }
-        
-        if (Date.now() - this.time > this.fuse) {
-            this.explode();
-            return false;
-        }
-        
+        if (this.mesh.position.y < 14) { this.mesh.position.y = 14; this.velocity.y *= -0.3; this.velocity.x *= 0.8; this.velocity.z *= 0.8; }
+        if (Date.now() - this.time > this.fuse) { this.explode(); return false; }
         return true;
     }
-    
     explode() {
-        this.exploded = true;
-        playSound('explode');
-        
+        this.exploded = true; playSound('explode');
         const pos = this.mesh.position;
-        
-        for (let i = 0; i < 15; i++) {
-            createImpactParticles(pos.clone().add(
-                new THREE.Vector3((Math.random() - 0.5) * 4, Math.random() * 4, (Math.random() - 0.5) * 4)
-            ));
-        }
-        
+        for (let i = 0; i < 15; i++) createImpactParticles(pos.clone().add(new THREE.Vector3((Math.random()-0.5)*4, Math.random()*4, (Math.random()-0.5)*4)));
         if (this.type === 'HE') {
-            bots.forEach(bot => {
-                if (bot.position.distanceTo(pos) < 10) {
-                    bot.userData.health -= 60;
-                    if (bot.userData.health <= 0) handleKill(bot);
-                }
-            });
-            
-            if (camera.position.distanceTo(pos) < 10) {
-                takeDamage(40);
-            }
+            bots.forEach(bot => { if (bot.position.distanceTo(pos) < 10) { bot.userData.health -= 60; if (bot.userData.health <= 0) handleKill(bot); } });
+            if (camera.position.distanceTo(pos) < 10) takeDamage(40);
         }
-        
         setTimeout(() => scene.remove(this.mesh), 500);
     }
 }
@@ -560,31 +443,20 @@ class Grenade {
 function throwGrenade(power = 0.5) {
     if (isFrozen || isDead) return;
     if (playerGrenades[selectedGrenadeType] <= 0) return;
-    
     playerGrenades[selectedGrenadeType]--;
-    
     const pos = camera.position.clone();
     const dir = new THREE.Vector3();
     camera.getWorldDirection(dir);
     pos.add(dir.clone().multiplyScalar(1.5));
-    
-    const g = new Grenade(pos, dir, selectedGrenadeType, power);
-    grenades.push(g);
+    grenades.push(new Grenade(pos, dir, selectedGrenadeType, power));
     updateGrenadeIndicator();
 }
 
 // ==================== PARTICULAS ====================
 function createImpactParticles(pos) {
-    const count = 10;
     const geom = new THREE.BufferGeometry();
-    const positions = [];
-    const vels = [];
-    
-    for (let i = 0; i < count; i++) {
-        positions.push(pos.x, pos.y, pos.z);
-        vels.push((Math.random() - 0.5) * 4, Math.random() * 5, (Math.random() - 0.5) * 4);
-    }
-    
+    const positions = [], vels = [];
+    for (let i = 0; i < 10; i++) { positions.push(pos.x, pos.y, pos.z); vels.push((Math.random()-0.5)*4, Math.random()*5, (Math.random()-0.5)*4); }
     geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     const mat = new THREE.PointsMaterial({ color: 0xffaa00, size: 0.2, transparent: true, opacity: 1 });
     const sys = new THREE.Points(geom, mat);
@@ -596,134 +468,75 @@ function createImpactParticles(pos) {
 function updateParticles(delta) {
     for (let i = particleSystems.length - 1; i >= 0; i--) {
         const sys = particleSystems[i];
-        if (Date.now() - sys.userData.time > 500) {
-            scene.remove(sys);
-            particleSystems.splice(i, 1);
-            continue;
-        }
-        
+        if (Date.now() - sys.userData.time > 500) { scene.remove(sys); particleSystems.splice(i, 1); continue; }
         const attr = sys.geometry.attributes.position;
         const v = sys.userData.vels;
-        for (let j = 0; j < attr.count; j++) {
-            attr.setXYZ(j,
-                attr.getX(j) + v[j * 3] * delta,
-                attr.getY(j) + v[j * 3 + 1] * delta - 9.8 * delta,
-                attr.getZ(j) + v[j * 3 + 2] * delta
-            );
-        }
+        for (let j = 0; j < attr.count; j++) attr.setXYZ(j, attr.getX(j)+v[j*3]*delta, attr.getY(j)+v[j*3+1]*delta-9.8*delta, attr.getZ(j)+v[j*3+2]*delta);
         attr.needsUpdate = true;
         sys.material.opacity -= delta;
     }
 }
 
-// ==================== CONTINUA NA PARTE 3 ====================
 // ==================== HUD ====================
 function updateHUD() {
-    const moneyEl = document.getElementById('hud-money');
-    const weaponEl = document.getElementById('hud-weapon');
-    const hpEl = document.getElementById('hud-hp');
-    
-    if (moneyEl) moneyEl.textContent = '$' + money;
-    if (hpEl) hpEl.textContent = playerHP + ' HP';
-    
-    if (currentSlot === 4) {
-        if (weaponEl) weaponEl.textContent = 'GRANADA [' + selectedGrenadeType + ']';
-    } else if (currentSlot === 5) {
-        if (weaponEl) weaponEl.textContent = hasBomb ? 'C4 [DISPONIVEL]' : 'C4 [PLANTADA]';
-    } else if (currentWeapon) {
-        if (weaponEl) weaponEl.textContent = currentWeapon.name + ' [' + currentWeapon.ammo + '/' + currentWeapon.reserveAmmo + ']';
-    }
-    
-    updateHealthBars();
-    updateWeaponSlots();
-    updateGrenadeIndicator();
+    document.getElementById('hud-money').textContent = '$' + money;
+    document.getElementById('hud-hp').textContent = playerHP + ' HP';
+    if (currentSlot === 4) document.getElementById('hud-weapon').textContent = 'GRANADA [' + selectedGrenadeType + ']';
+    else if (currentSlot === 5) document.getElementById('hud-weapon').textContent = hasBomb ? 'C4 [DISPONIVEL]' : 'C4 [PLANTADA]';
+    else if (currentWeapon) document.getElementById('hud-weapon').textContent = currentWeapon.name + ' [' + currentWeapon.ammo + '/' + currentWeapon.reserveAmmo + ']';
+    updateHealthBars(); updateWeaponSlots(); updateGrenadeIndicator();
 }
 
 function updateHealthBars() {
-    const hBar = document.getElementById('health-bar');
-    const hText = document.getElementById('health-text');
-    const aBar = document.getElementById('armor-bar');
-    const aText = document.getElementById('armor-text');
-    
-    if (hBar) hBar.style.width = playerHP + '%';
-    if (hText) hText.textContent = playerHP;
-    if (aBar) aBar.style.width = playerArmor + '%';
-    if (aText) aText.textContent = playerArmor;
+    document.getElementById('health-bar').style.width = playerHP + '%';
+    document.getElementById('health-text').textContent = playerHP;
+    document.getElementById('armor-bar').style.width = playerArmor + '%';
+    document.getElementById('armor-text').textContent = playerArmor;
 }
 
 function updateWeaponSlots() {
     const container = document.getElementById('weapon-slots');
     if (!container) return;
-    
     const slots = [
-        { key: 1, w: weaponSlots[1], label: '1' },
-        { key: 2, w: weaponSlots[2], label: '2' },
-        { key: 3, w: weaponSlots[3], label: '3' },
-        { key: 4, label: '4', special: 'GREN' },
-        { key: 5, label: '5', special: 'C4' }
+        { key: 1, w: weaponSlots[1], label: '1' }, { key: 2, w: weaponSlots[2], label: '2' },
+        { key: 3, w: weaponSlots[3], label: '3' }, { key: 4, label: '4', special: 'GREN' }, { key: 5, label: '5', special: 'C4' }
     ];
-    
     container.innerHTML = slots.map(s => {
         const active = currentSlot === s.key;
-        let name = '';
-        if (s.key === 4) name = 'GREN';
-        else if (s.key === 5) name = hasBomb ? 'C4' : '---';
-        else if (s.w) name = s.w.name.substring(0, 4).toUpperCase();
-        else name = '---';
-        
+        let name = s.key === 4 ? 'GREN' : s.key === 5 ? (hasBomb ? 'C4' : '---') : (s.w ? s.w.name.substring(0,4).toUpperCase() : '---');
         return '<div class="slot' + (active ? ' active' : '') + '">[' + s.label + '] ' + name + '</div>';
     }).join('');
 }
 
 function updateGrenadeIndicator() {
     const spans = document.querySelectorAll('#grenade-indicator span');
-    if (spans.length >= 3) {
-        spans[0].textContent = 'HE: ' + playerGrenades.HE;
-        spans[1].textContent = 'FLASH: ' + playerGrenades.FLASH;
-        spans[2].textContent = 'SMOKE: ' + playerGrenades.SMOKE;
-    }
+    if (spans.length >= 3) { spans[0].textContent = 'HE: ' + playerGrenades.HE; spans[1].textContent = 'FLASH: ' + playerGrenades.FLASH; spans[2].textContent = 'SMOKE: ' + playerGrenades.SMOKE; }
 }
 
 function updateRanking() {
     const list = document.getElementById('ranking-list');
     if (!list) return;
-    
     const rankings = [{ name: currentPlayer?.name || 'VOCE', kills: playerStats.kills, you: true }];
-    
-    bots.forEach(b => {
-        rankings.push({ name: b.userData.name, kills: Math.floor(Math.random() * 15), you: false });
-    });
-    
-    rankings.sort((a, b) => b.kills - a.kills);
-    
-    list.innerHTML = rankings.slice(0, 8).map((r, i) => {
-        const prefix = i === 0 ? '1.' : i === 1 ? '2.' : i === 2 ? '3.' : (i + 1) + '.';
-        return '<div class="rank-item' + (r.you ? ' you' : '') + '"><span>' + prefix + ' ' + r.name + '</span><span>' + r.kills + '</span></div>';
-    }).join('');
+    bots.forEach(b => rankings.push({ name: b.userData.name, kills: Math.floor(Math.random()*15), you: false }));
+    rankings.sort((a,b) => b.kills - a.kills);
+    list.innerHTML = rankings.slice(0,8).map((r,i) => '<div class="rank-item'+(r.you?' you':'')+'"><span>'+(i+1)+'. '+r.name+'</span><span>'+r.kills+'</span></div>').join('');
 }
 
 function toggleRanking() {
     const list = document.getElementById('ranking-list');
     const btn = document.querySelector('#ranking-header button');
-    if (list.style.display === 'none') {
-        list.style.display = 'block';
-        if (btn) btn.textContent = '-';
-    } else {
-        list.style.display = 'none';
-        if (btn) btn.textContent = '+';
-    }
+    if (list.style.display === 'none') { list.style.display = 'block'; if(btn) btn.textContent = '-'; }
+    else { list.style.display = 'none'; if(btn) btn.textContent = '+'; }
 }
 
 // ==================== CHAT ====================
 function addChatMessage(sender, msg, type) {
     const box = document.getElementById('chat-box');
     if (!box) return;
-    
     const div = document.createElement('div');
     div.className = 'chat-msg ' + (type || 'player');
     div.textContent = sender + ': ' + msg;
     box.appendChild(div);
-    
     while (box.children.length > 30) box.removeChild(box.firstChild);
     box.scrollTop = box.scrollHeight;
 }
@@ -731,925 +544,241 @@ function addChatMessage(sender, msg, type) {
 function addKillFeed(killer, victim) {
     const feed = document.getElementById('killfeed');
     if (!feed) return;
-    
     const div = document.createElement('div');
     div.className = 'kill-entry';
     div.textContent = killer + ' ' + victim;
     feed.appendChild(div);
-    
     setTimeout(() => div.remove(), 3000);
-    
     while (feed.children.length > 4) feed.removeChild(feed.firstChild);
 }
 
 function toggleChat() {
     isChatOpen = !isChatOpen;
     const input = document.getElementById('chat-input');
-    const box = document.getElementById('chat-box');
-    
-    if (isChatOpen) {
-        if (box) box.style.display = 'flex';
-        if (input) { input.style.display = 'block'; input.focus(); }
-        if (isLocked) controls.unlock();
-    } else {
-        if (box) box.style.display = 'none';
-        if (input) { input.style.display = 'none'; input.value = ''; }
-        if (!isLocked) controls.lock();
-    }
+    if (isChatOpen) { document.getElementById('chat-box').style.display = 'flex'; input.style.display = 'block'; input.focus(); if(isLocked) controls.unlock(); }
+    else { document.getElementById('chat-box').style.display = 'none'; input.style.display = 'none'; input.value = ''; if(!isLocked) controls.lock(); }
 }
 
 function sendChatMessage() {
     const input = document.getElementById('chat-input');
     const msg = input.value.trim();
     if (!msg) { toggleChat(); return; }
-    
-    if (msg.startsWith('/') && adminMode) {
-        processCommand(msg);
-    } else {
-        addChatMessage(currentPlayer?.name || 'Player', msg, 'player');
-    }
-    
-    input.value = '';
-    toggleChat();
+    if (msg.startsWith('/') && adminMode) processCommand(msg);
+    else addChatMessage(currentPlayer?.name || 'Player', msg, 'player');
+    input.value = ''; toggleChat();
 }
 
-// ==================== COMANDOS ADMIN ====================
+// ==================== COMANDOS ====================
 function processCommand(msg) {
     const parts = msg.substring(1).split(' ');
     const cmd = parts[0].toLowerCase();
     const args = parts.slice(1);
-    
     if (!adminMode) return;
-    
     switch(cmd) {
-        case 'god':
-            godMode = !godMode;
-            addAdminLog('/god ' + (godMode ? 'ON' : 'OFF'));
-            break;
-        case 'fly':
-            isFlyMode = !isFlyMode;
-            break;
-        case 'kick':
-            if (args[0]) {
-                const bot = bots.find(b => b.userData.name.toLowerCase() === args[0].toLowerCase());
-                if (bot) { scene.remove(bot); bots = bots.filter(b => b !== bot); }
-                addAdminLog('/kick ' + args[0]);
-            }
-            break;
-        case 'ban':
-            if (args[0] && args[1]) {
-                const days = args[1] === 'perm' ? 0 : parseInt(args[1]);
-                bannedPlayers[args[0].toLowerCase()] = {
-                    name: args[0],
-                    days: days,
-                    time: days > 0 ? Date.now() + days * 86400000 : 0
-                };
-                localStorage.setItem('dust2_banned', JSON.stringify(bannedPlayers));
-                addAdminLog('/ban ' + args[0] + ' ' + args[1]);
-                addChatMessage('SISTEMA', args[0] + ' banido', 'system');
-            }
-            break;
-        case 'unban':
-            if (args[0]) {
-                delete bannedPlayers[args[0].toLowerCase()];
-                localStorage.setItem('dust2_banned', JSON.stringify(bannedPlayers));
-                addAdminLog('/unban ' + args[0]);
-            }
-            break;
-        case 'give':
-            if (args[0] === 'money') money += parseInt(args[1]) || 1000;
-            if (args[0] === 'hp') playerHP = Math.min(playerHP + 50, 100);
-            if (args[0] === 'ak47') { weaponSlots[1] = { name: "AK-47", damage: 35, recoil: 0.05, fireRate: 120, type: "Rifle", ammo: 30, maxAmmo: 30, reserveAmmo: 90, reloadTime: 2500 }; currentWeapon = weaponSlots[1]; currentSlot = 1; }
-            if (args[0] === 'awp') { weaponSlots[1] = { name: "AWP", damage: 115, recoil: 0.20, fireRate: 1000, type: "Sniper", ammo: 10, maxAmmo: 10, reserveAmmo: 30, reloadTime: 3000 }; currentWeapon = weaponSlots[1]; currentSlot = 1; }
-            addAdminLog('/give ' + args.join(' '));
-            break;
-        case 'zumbi':
-        case 'zombie':
-            bots.forEach(b => { b.userData.health = 200; b.children.forEach(c => { if (c.material && c.material.color) c.material.color.setHex(0x00ff00); }); });
-            addChatMessage('SISTEMA', 'Modo Zumbi ativado', 'system');
-            addAdminLog('/zumbi');
-            break;
-        case 'wall':
-            wallhackActive = !wallhackActive;
-            if (wallhackActive) {
-                mapColliders.forEach(c => { if (c.material) { c.material.transparent = true; c.material.opacity = 0.15; } });
-            } else {
-                mapColliders.forEach(c => { if (c.material) { c.material.transparent = false; c.material.opacity = 1; } });
-            }
-            addAdminLog('/wall ' + (wallhackActive ? 'ON' : 'OFF'));
-            break;
-        case 'dance':
-            bots.forEach(b => {
-                const origY = b.position.y;
-                let jumps = 0;
-                const int = setInterval(() => {
-                    if (jumps >= 5) { clearInterval(int); b.position.y = origY; return; }
-                    b.position.y = origY + Math.abs(Math.sin(jumps * 2)) * 2;
-                    jumps++;
-                }, 200);
-            });
-            addAdminLog('/dance');
-            break;
-        case 'admin':
-            if (args[0] === 'criar' && currentPlayer?.type === 'dev') {
-                const admins = JSON.parse(localStorage.getItem('dust2_admins') || '{}');
-                admins[args[1].toLowerCase()] = { name: args[1], password: args[2], expires: args[3] ? Date.now() + parseInt(args[3]) * 86400000 : 0 };
-                localStorage.setItem('dust2_admins', JSON.stringify(admins));
-                addChatMessage('SISTEMA', 'Admin ' + args[1] + ' criado', 'system');
-                addAdminLog('/admin criar ' + args[1]);
-            }
-            break;
-        case 'help':
-            addChatMessage('COMANDOS', 'god fly kick ban give zumbi wall dance', 'system');
-            break;
+        case 'god': godMode = !godMode; addAdminLog('/god '+(godMode?'ON':'OFF')); break;
+        case 'fly': isFlyMode = !isFlyMode; break;
+        case 'kick': if(args[0]){const b=bots.find(b=>b.userData.name.toLowerCase()===args[0].toLowerCase());if(b){scene.remove(b);bots=bots.filter(b2=>b2!==b);}addAdminLog('/kick '+args[0]);} break;
+        case 'ban': if(args[0]&&args[1]){const d=args[1]==='perm'?0:parseInt(args[1]);bannedPlayers[args[0].toLowerCase()]={name:args[0],days:d,time:d>0?Date.now()+d*86400000:0};localStorage.setItem('dust2_banned',JSON.stringify(bannedPlayers));addAdminLog('/ban '+args[0]+' '+args[1]);addChatMessage('SISTEMA',args[0]+' banido','system');} break;
+        case 'unban': if(args[0]){delete bannedPlayers[args[0].toLowerCase()];localStorage.setItem('dust2_banned',JSON.stringify(bannedPlayers));addAdminLog('/unban '+args[0]);} break;
+        case 'give': if(args[0]==='money') money+=parseInt(args[1])||1000; if(args[0]==='hp') playerHP=Math.min(playerHP+50,100); if(args[0]==='ak47'){weaponSlots[1]={name:"AK-47",damage:35,recoil:0.05,fireRate:120,type:"Rifle",ammo:30,maxAmmo:30,reserveAmmo:90,reloadTime:2500};currentWeapon=weaponSlots[1];currentSlot=1;} if(args[0]==='awp'){weaponSlots[1]={name:"AWP",damage:115,recoil:0.20,fireRate:1000,type:"Sniper",ammo:10,maxAmmo:10,reserveAmmo:30,reloadTime:3000};currentWeapon=weaponSlots[1];currentSlot=1;} addAdminLog('/give '+args.join(' ')); break;
+        case 'zumbi': case 'zombie': bots.forEach(b=>{b.userData.health=200;b.children.forEach(c=>{if(c.material&&c.material.color)c.material.color.setHex(0x00ff00);});});addChatMessage('SISTEMA','Modo Zumbi ativado','system');addAdminLog('/zumbi');break;
+        case 'wall': wallhackActive=!wallhackActive;mapColliders.forEach(c=>{if(c.material){c.material.transparent=wallhackActive;c.material.opacity=wallhackActive?0.15:1;}});addAdminLog('/wall '+(wallhackActive?'ON':'OFF'));break;
+        case 'dance': bots.forEach(b=>{const o=b.position.y;let j=0;const int=setInterval(()=>{if(j>=5){clearInterval(int);b.position.y=o;return;}b.position.y=o+Math.abs(Math.sin(j*2))*2;j++;},200);});addAdminLog('/dance');break;
+        case 'admin': if(args[0]==='criar'&&currentPlayer?.type==='dev'){const adm=JSON.parse(localStorage.getItem('dust2_admins')||'{}');adm[args[1].toLowerCase()]={name:args[1],password:args[2],expires:args[3]?Date.now()+parseInt(args[3])*86400000:0};localStorage.setItem('dust2_admins',JSON.stringify(adm));addChatMessage('SISTEMA','Admin '+args[1]+' criado','system');addAdminLog('/admin criar '+args[1]);} break;
+        case 'help': addChatMessage('COMANDOS','god fly kick ban give zumbi wall dance','system'); break;
     }
-    
     updateHUD();
 }
 
 function addAdminLog(action) {
-    adminLogs.push({ time: new Date().toLocaleTimeString(), action: action });
-    const logContent = document.getElementById('log-content');
-    if (logContent) {
-        logContent.innerHTML = adminLogs.slice(-30).map(l => '<div>' + l.time + ' - ' + l.action + '</div>').join('');
-    }
+    adminLogs.push({time:new Date().toLocaleTimeString(),action:action});
+    const c=document.getElementById('log-content');
+    if(c)c.innerHTML=adminLogs.slice(-30).map(l=>'<div>'+l.time+' - '+l.action+'</div>').join('');
 }
 
 // ==================== BOMBA ====================
 function plantBomb() {
-    if (!hasBomb || bombPlanted || isFrozen || isDead) return;
-    
-    bombPlanted = true;
-    hasBomb = false;
-    weaponSlots[5].hasBomb = false;
-    playerStats.bombsPlanted++;
-    
-    addKillFeed("C4 PLANTADA", "");
-    playSound('beep');
-    
-    let seconds = 40;
-    bombTimer = setInterval(() => {
-        seconds--;
-        if (seconds <= 10 && seconds > 0) playSound('beep');
-        if (seconds <= 0) {
-            clearInterval(bombTimer);
-            explodeBomb();
-        }
-    }, 1000);
-    
+    if(!hasBomb||bombPlanted||isFrozen||isDead)return;
+    bombPlanted=true;hasBomb=false;weaponSlots[5].hasBomb=false;playerStats.bombsPlanted++;
+    addKillFeed("C4 PLANTADA","");playSound('beep');
+    let s=40;bombTimer=setInterval(()=>{s--;if(s<=10&&s>0)playSound('beep');if(s<=0){clearInterval(bombTimer);explodeBomb();}},1000);
     updateHUD();
 }
+function explodeBomb(){bombPlanted=false;playSound('explode');scoreT++;document.getElementById('score-t').textContent=scoreT;addKillFeed("BOMBA EXPLODIU","TR VENCE");setTimeout(()=>nextRound(),3000);}
+function checkRoundEnd(){if(bots.length===0){if(bombTimer)clearInterval(bombTimer);scoreCT++;document.getElementById('score-ct').textContent=scoreCT;addKillFeed("TODOS ELIMINADOS","CT VENCE");setTimeout(()=>nextRound(),3000);}}
+function nextRound(){bombPlanted=false;hasBomb=true;weaponSlots[5].hasBomb=true;round++;document.getElementById('hud-round').textContent=round;camera.position.copy(CHECKPOINTS.TR_SPAWN);createBots();money+=3200;playerHP=100;playerArmor=0;isDead=false;killStreak=0;if(currentWeapon&&currentSlot<=3)currentWeapon.ammo=currentWeapon.maxAmmo;updateHUD();startFreezeTime();}
 
-function explodeBomb() {
-    bombPlanted = false;
-    playSound('explode');
-    scoreT++;
-    document.getElementById('score-t').textContent = scoreT;
-    addKillFeed("BOMBA EXPLODIU", "TR VENCE");
-    setTimeout(() => nextRound(), 3000);
+// ==================== MOVIMENTACAO ====================
+function onMouseDown(e){if(!isLocked||isChatOpen||isDead)return;if(e.button===0){e.preventDefault();if(!isReloading)shoot();}if(e.button===2){e.preventDefault();cycleGrenade();}if(e.button===1){e.preventDefault();throwGrenade(0.5);}}
+function onMouseUp(e){if(e.button===0&&isHoldingGrenade){e.preventDefault();releaseGrenade();}}
+function onKeyDown(e){
+    if(e.key==='F12'){e.preventDefault();detectTamper();return;}
+    if((e.key==='t'||e.key==='T')&&!isChatOpen&&currentPlayer?.type!=='guest'){e.preventDefault();toggleChat();return;}
+    if(e.key==='Escape'){if(isChatOpen){toggleChat();return;}toggleSettings();return;}
+    if(isChatOpen){if(e.key==='Enter'){e.preventDefault();sendChatMessage();}return;}
+    if(isDead)return;
+    if(e.key>='1'&&e.key<='5'){e.preventDefault();switchWeapon(parseInt(e.key));return;}
+    if(e.key==='q'||e.key==='Q'){e.preventDefault();quickSwitch();return;}
+    if(e.key==='z'||e.key==='Z'){sendRadio('gogo');return;}
+    if(e.key==='x'||e.key==='X'){sendRadio('enemy');return;}
+    if(e.key==='c'||e.key==='C'){sendRadio('help');return;}
+    if(!isFrozen){switch(e.code){case'KeyW':moveForward=true;break;case'KeyA':moveLeft=true;break;case'KeyS':moveBackward=true;break;case'KeyD':moveRight=true;break;case'ShiftLeft':isWalkingSilently=true;break;case'Space':if(canJump||isFlyMode){velocity.y+=isFlyMode?300:100;canJump=false;}break;case'KeyR':reloadWeapon();break;case'KeyG':throwGrenade(0.7);break;case'KeyB':toggleBuyMenu();break;}}
+    if((e.key==='f'||e.key==='F')&&hasBomb&&!bombPlanted&&!isFrozen&&!isDead){if(camera.position.distanceTo(CHECKPOINTS.BOMB_A)<20||camera.position.distanceTo(CHECKPOINTS.BOMB_B)<20)plantBomb();}
 }
+function onKeyUp(e){switch(e.code){case'KeyW':moveForward=false;break;case'KeyA':moveLeft=false;break;case'KeyS':moveBackward=false;break;case'KeyD':moveRight=false;break;case'ShiftLeft':isWalkingSilently=false;break;}}
+function onResize(){camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);}
+function sendRadio(type){if(!radioEnabled||currentPlayer?.type==='guest')return;const msgs={gogo:'GO GO GO!',enemy:'INIMIGO AVISTADO!',help:'PRECISO DE AJUDA!'};addChatMessage(currentPlayer?.name||'Player',msgs[type],'radio');playSound('radio');}
+function switchWeapon(slot){if(isSwitchingWeapon||isDead||slot===currentSlot)return;isSwitchingWeapon=true;if(isReloading){isReloading=false;document.getElementById('reload-indicator').style.display='none';}setTimeout(()=>{currentSlot=slot;if(slot<=3)currentWeapon=weaponSlots[slot];else currentWeapon=null;sprayCounter=0;isSwitchingWeapon=false;updateHUD();playSound('beep');},200);}
+function quickSwitch(){if(currentSlot>=4)switchWeapon(1);else switchWeapon(currentSlot===1?2:1);}
+function reloadWeapon(){if(isReloading||isDead||isSwitchingWeapon||currentSlot>=3)return;if(!currentWeapon||currentWeapon.ammo>=currentWeapon.maxAmmo)return;if(currentWeapon.reserveAmmo<=0)return;isReloading=true;document.getElementById('reload-indicator').style.display='block';setTimeout(()=>{const need=currentWeapon.maxAmmo-currentWeapon.ammo;const avail=Math.min(need,currentWeapon.reserveAmmo);currentWeapon.ammo+=avail;currentWeapon.reserveAmmo-=avail;isReloading=false;document.getElementById('reload-indicator').style.display='none';updateHUD();},currentWeapon.reloadTime||2500);}
+function cycleGrenade(){const types=['HE','FLASH','SMOKE','MOLOTOV'];const avail=types.filter(t=>playerGrenades[t]>0);if(avail.length===0)return;const idx=avail.indexOf(selectedGrenadeType);selectedGrenadeType=avail[(idx+1)%avail.length];updateGrenadeIndicator();}
+function releaseGrenade(){if(!isHoldingGrenade)return;isHoldingGrenade=false;if(grenadeThrowPower<0.1)grenadeThrowPower=0.1;throwGrenade(grenadeThrowPower);document.getElementById('grenade-power-indicator').style.display='none';}
 
-function checkRoundEnd() {
-    if (bots.length === 0) {
-        if (bombTimer) clearInterval(bombTimer);
-        scoreCT++;
-        document.getElementById('score-ct').textContent = scoreCT;
-        addKillFeed("TODOS ELIMINADOS", "CT VENCE");
-        setTimeout(() => nextRound(), 3000);
-    }
-}
+// ==================== CONFIGS ====================
+function toggleSettings(){const p=document.getElementById('settings-panel');if(!p)return;p.style.display=p.style.display==='block'?'none':'block';}
+function showSettings(){document.getElementById('menu-screen').classList.remove('active');document.getElementById('game-screen').classList.add('active');document.getElementById('settings-panel').style.display='block';}
 
-function nextRound() {
-    bombPlanted = false;
-    hasBomb = true;
-    weaponSlots[5].hasBomb = true;
-    round++;
-    document.getElementById('hud-round').textContent = round;
-    camera.position.copy(CHECKPOINTS.TR_SPAWN);
-    createBots();
-    money += 3200;
-    playerHP = 100;
-    playerArmor = 0;
-    isDead = false;
-    killStreak = 0;
-    if (currentWeapon && currentSlot <= 3) currentWeapon.ammo = currentWeapon.maxAmmo;
-    updateHUD();
-    startFreezeTime();
-}
-
-// ==================== CONTINUA NA PARTE 4 ====================
-// ==================== MOVIMENTAÇÃO ====================
-function onMouseDown(e) {
-    if (!isLocked || isChatOpen || isDead) return;
-    
-    if (e.button === 0) {
-        e.preventDefault();
-        if (!isReloading) shoot();
-    }
-    if (e.button === 2) {
-        e.preventDefault();
-        cycleGrenade();
-    }
-    if (e.button === 1) {
-        e.preventDefault();
-        throwGrenade(0.5);
-    }
-}
-
-function onMouseUp(e) {
-    if (e.button === 0 && isHoldingGrenade) {
-        e.preventDefault();
-        releaseGrenade();
-    }
-}
-
-function onKeyDown(e) {
-    if (e.key === 'F1') { e.preventDefault(); toggleSettings(); return; }
-    if (e.key === 'F2' && adminMode) { e.preventDefault(); showAdminLog(); return; }
-    if (e.key === 'F3' && adminMode) { e.preventDefault(); showSecretChat(); return; }
-    if (e.key === 'F12') { e.preventDefault(); detectTamper(); return; }
-    
-    if ((e.key === 't' || e.key === 'T') && !isChatOpen && currentPlayer?.type !== 'guest') {
-        e.preventDefault();
-        toggleChat();
-        return;
-    }
-    
-    if (e.key === 'Escape') {
-        if (isChatOpen) { toggleChat(); return; }
-        toggleSettings();
-        return;
-    }
-    
-    if (isChatOpen) {
-        if (e.key === 'Enter') { e.preventDefault(); sendChatMessage(); }
-        return;
-    }
-    
-    if (isDead) return;
-    
-    if (e.key >= '1' && e.key <= '5') { e.preventDefault(); switchWeapon(parseInt(e.key)); return; }
-    if (e.key === 'q' || e.key === 'Q') { e.preventDefault(); quickSwitch(); return; }
-    
-    if (e.key === 'z' || e.key === 'Z') { sendRadio('gogo'); return; }
-    if (e.key === 'x' || e.key === 'X') { sendRadio('enemy'); return; }
-    if (e.key === 'c' || e.key === 'C') { sendRadio('help'); return; }
-    
-    if (!isFrozen) {
-        switch(e.code) {
-            case 'KeyW': moveForward = true; break;
-            case 'KeyA': moveLeft = true; break;
-            case 'KeyS': moveBackward = true; break;
-            case 'KeyD': moveRight = true; break;
-            case 'ShiftLeft': isWalkingSilently = true; break;
-            case 'Space': if (canJump || isFlyMode) { velocity.y += isFlyMode ? 300 : 100; canJump = false; } break;
-            case 'KeyR': reloadWeapon(); break;
-            case 'KeyG': throwGrenade(0.7); break;
-            case 'KeyB': toggleBuyMenu(); break;
-        }
-    }
-    
-    if ((e.key === 'f' || e.key === 'F') && hasBomb && !bombPlanted && !isFrozen && !isDead) {
-        if (camera.position.distanceTo(CHECKPOINTS.BOMB_A) < 20 || camera.position.distanceTo(CHECKPOINTS.BOMB_B) < 20) {
-            plantBomb();
-        }
-    }
-}
-
-function onKeyUp(e) {
-    switch(e.code) {
-        case 'KeyW': moveForward = false; break;
-        case 'KeyA': moveLeft = false; break;
-        case 'KeyS': moveBackward = false; break;
-        case 'KeyD': moveRight = false; break;
-        case 'ShiftLeft': isWalkingSilently = false; break;
-    }
-}
-
-function onResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-}
-
-function sendRadio(type) {
-    if (!radioEnabled || currentPlayer?.type === 'guest') return;
-    const msgs = { gogo: 'GO GO GO!', enemy: 'INIMIGO AVISTADO!', help: 'PRECISO DE AJUDA!' };
-    addChatMessage(currentPlayer?.name || 'Player', msgs[type] || type, 'radio');
-    playSound('radio');
-}
-
-function switchWeapon(slot) {
-    if (isSwitchingWeapon || isDead || slot === currentSlot) return;
-    if (slot < 1 || slot > 5) return;
-    
-    isSwitchingWeapon = true;
-    if (isReloading) { isReloading = false; document.getElementById('reload-indicator').style.display = 'none'; }
-    
-    setTimeout(() => {
-        currentSlot = slot;
-        if (slot <= 3) currentWeapon = weaponSlots[slot];
-        else currentWeapon = null;
-        sprayCounter = 0;
-        isSwitchingWeapon = false;
-        updateHUD();
-        playSound('beep');
-    }, 200);
-}
-
-function quickSwitch() {
-    if (currentSlot >= 4) switchWeapon(1);
-    else switchWeapon(currentSlot === 1 ? 2 : 1);
-}
-
-function reloadWeapon() {
-    if (isReloading || isDead || isSwitchingWeapon || currentSlot >= 3) return;
-    if (!currentWeapon || currentWeapon.ammo >= currentWeapon.maxAmmo) return;
-    if (currentWeapon.reserveAmmo <= 0) return;
-    
-    isReloading = true;
-    document.getElementById('reload-indicator').style.display = 'block';
-    
-    setTimeout(() => {
-        const need = currentWeapon.maxAmmo - currentWeapon.ammo;
-        const avail = Math.min(need, currentWeapon.reserveAmmo);
-        currentWeapon.ammo += avail;
-        currentWeapon.reserveAmmo -= avail;
-        isReloading = false;
-        document.getElementById('reload-indicator').style.display = 'none';
-        updateHUD();
-    }, currentWeapon.reloadTime || 2500);
-}
-
-// ==================== GRANADA SEGURANDO ====================
-function cycleGrenade() {
-    const types = ['HE', 'FLASH', 'SMOKE', 'MOLOTOV'];
-    const avail = types.filter(t => playerGrenades[t] > 0);
-    if (avail.length === 0) return;
-    const idx = avail.indexOf(selectedGrenadeType);
-    selectedGrenadeType = avail[(idx + 1) % avail.length];
-    updateGrenadeIndicator();
-}
-
-function releaseGrenade() {
-    if (!isHoldingGrenade) return;
-    isHoldingGrenade = false;
-    if (grenadeThrowPower < 0.1) grenadeThrowPower = 0.1;
-    throwGrenade(grenadeThrowPower);
-    document.getElementById('grenade-power-indicator').style.display = 'none';
-}
-
-function toggleSettings() {
-    const panel = document.getElementById('settings-panel');
-    if (!panel) return;
-    
-    const isOpen = panel.style.display === 'block';
-    
-    if (isOpen) {
-        panel.style.display = 'none';
-        backToMenu();
-    } else {
-        panel.style.display = 'block';
-        controls.unlock();
-    }
-}
-
-function backToMenu() {
-    // Esconder todos painéis
-    ['settings-panel', 'admin-panel', 'admin-log', 'secret-chat', 'create-room-form'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-    });
-    
-    // Fechar chat
-    if (isChatOpen) {
-        isChatOpen = false;
-        document.getElementById('chat-input').style.display = 'none';
-        document.getElementById('chat-box').style.display = 'none';
-    }
-    
-    // Voltar pro menu
-    document.getElementById('game-screen').classList.remove('active');
-    document.getElementById('menu-screen').classList.add('active');
-    
-    // Mostrar menu certo
-    if (currentPlayer) {
-        const type = currentPlayer.type;
-        document.getElementById('admin-menu').style.display = (type === 'dev' || type === 'admin') ? 'block' : 'none';
-        document.getElementById('player-menu').style.display = (type === 'player') ? 'block' : 'none';
-        document.getElementById('guest-menu').style.display = (type === 'guest') ? 'block' : 'none';
-    }
-    
-    controls.unlock();
-    isLocked = false;
-}
-
-function showSettings() {
-    document.getElementById('menu-screen').classList.remove('active');
-    document.getElementById('game-screen').classList.add('active');
-    document.getElementById('settings-panel').style.display = 'block';
-    controls.unlock();
-}
-
-// ==================== ADMIN PAINEL ====================
-function toggleAdminPanel() {
-    const panel = document.getElementById('admin-panel');
-    if (!panel) return;
-    
-    if (panel.style.display === 'block') {
-        panel.style.display = 'none';
-        backToMenu();
-    } else {
-        panel.style.display = 'block';
-        controls.unlock();
-    }
-}
-
-function showAdminLog() {
-    const log = document.getElementById('admin-log');
-    if (log) log.style.display = log.style.display === 'block' ? 'none' : 'block';
-    updateAdminLogDisplay();
-}
-
-function updateAdminLogDisplay() {
-    const content = document.getElementById('log-content');
-    if (content) content.innerHTML = adminLogs.slice(-30).map(l => '<div>' + l.time + ' - ' + l.action + '</div>').join('');
-}
-
-function clearAdminLog() {
-    adminLogs = [];
-    updateAdminLogDisplay();
-}
-
-function showSecretChat() {
-    const chat = document.getElementById('secret-chat');
-    if (chat) chat.style.display = chat.style.display === 'block' ? 'none' : 'block';
-}
-
-function sendSecretMessage() {
-    const input = document.getElementById('secret-chat-input');
-    const content = document.getElementById('secret-chat-content');
-    if (input && content && input.value.trim()) {
-        const div = document.createElement('div');
-        div.textContent = '[' + new Date().toLocaleTimeString() + '] ' + input.value;
-        content.appendChild(div);
-        input.value = '';
-    }
-}
-
-function showCreateRoom() {
-    document.getElementById('create-room-form').style.display = 'block';
-}
-
-function hideCreateRoom() {
-    document.getElementById('create-room-form').style.display = 'none';
-}
-
-function hideCreateRoom() {
-    document.getElementById('create-room-form').style.display = 'none';
-    backToMenu();
-}
-
-function confirmCreateRoom() {
-    const code = document.getElementById('room-code-create').value.trim();
-    const mode = document.getElementById('room-mode-create').value;
-    const bots = document.getElementById('room-bots-create').value;
-    if (code) {
-        sessionStorage.setItem('roomCode', code);
-        sessionStorage.setItem('gameMode', mode);
-        sessionStorage.setItem('botCount', bots);
-        addChatMessage('SISTEMA', 'Sala ' + code + ' criada', 'system');
-        addAdminLog('Sala criada: ' + code);
-    }
-    hideCreateRoom();
-    startGame();
-}
-
-function joinRoom() {
-    const code = prompt('DIGITE O CODIGO DA SALA:');
-    if (code) {
-        sessionStorage.setItem('roomCode', code);
-        startGame();
-    }
-}
-
-function showProfile() {
-    alert('PERFIL\n\nKills: ' + playerStats.kills + '\nDeaths: ' + playerStats.deaths + '\nHeadshots: ' + playerStats.headshots + '\nMVPs: ' + playerStats.mvps);
-}
-
-function showBotsMenu() {
-    const count = prompt('QUANTOS BOTS? (0-20):', '5');
-    if (count !== null) {
-        sessionStorage.setItem('botCount', count);
-        alert('BOTS: ' + count + ' (proxima partida)');
-    }
-}
-
-function showBanMenu() {
-    const list = Object.values(bannedPlayers).map(b => b.name + ' (' + (b.days === 0 ? 'PERM' : b.days + 'd') + ')').join('\n');
-    alert('BANIDOS:\n' + (list || 'NENHUM'));
-}
-
-function showAdminsMenu() {
-    const admins = JSON.parse(localStorage.getItem('dust2_admins') || '{}');
-    const list = Object.values(admins).map(a => a.name).join('\n');
-    alert('ADMINS:\n' + (list || 'NENHUM'));
-}
-
-function showStats() {
-    alert('ESTATISTICAS GLOBAIS\n\nJogadores: ' + (Object.keys(JSON.parse(localStorage.getItem('dust2_users') || '{}')).length) + '\nBanidos: ' + Object.keys(bannedPlayers).length);
-}
+// ==================== ADMIN ====================
+function toggleAdminPanel(){const p=document.getElementById('admin-panel');if(p)p.style.display=p.style.display==='block'?'none':'block';}
+function showAdminLog(){const l=document.getElementById('admin-log');if(l){l.style.display=l.style.display==='block'?'none':'block';updateAdminLogDisplay();}}
+function updateAdminLogDisplay(){const c=document.getElementById('log-content');if(c)c.innerHTML=adminLogs.slice(-30).map(l=>'<div>'+l.time+' - '+l.action+'</div>').join('');}
+function clearAdminLog(){adminLogs=[];updateAdminLogDisplay();}
+function showSecretChat(){const c=document.getElementById('secret-chat');if(c)c.style.display=c.style.display==='block'?'none':'block';}
+function sendSecretMessage(){const i=document.getElementById('secret-chat-input');const c=document.getElementById('secret-chat-content');if(i&&c&&i.value.trim()){const d=document.createElement('div');d.textContent='['+new Date().toLocaleTimeString()+'] '+i.value;c.appendChild(d);i.value='';}}
+function showCreateRoom(){document.getElementById('create-room-form').style.display='block';}
+function hideCreateRoom(){document.getElementById('create-room-form').style.display='none';}
+function createRoom(){showCreateRoom();}
+function confirmCreateRoom(){const code=document.getElementById('room-code-create').value.trim();const mode=document.getElementById('room-mode-create').value;const bots=document.getElementById('room-bots-create').value;if(code){sessionStorage.setItem('roomCode',code);sessionStorage.setItem('gameMode',mode);sessionStorage.setItem('botCount',bots);addChatMessage('SISTEMA','Sala '+code+' criada','system');addAdminLog('Sala: '+code);}hideCreateRoom();startGame();}
+function joinRoom(){const code=prompt('CODIGO DA SALA:');if(code){sessionStorage.setItem('roomCode',code);startGame();}}
+function showProfile(){alert('Kills: '+playerStats.kills+'\nDeaths: '+playerStats.deaths+'\nHeadshots: '+playerStats.headshots);}
+function showBotsMenu(){const c=prompt('QUANTOS BOTS?','5');if(c){sessionStorage.setItem('botCount',c);}}
+function showBanMenu(){const list=Object.values(bannedPlayers).map(b=>b.name).join('\n');alert('BANIDOS:\n'+(list||'NENHUM'));}
+function showAdminsMenu(){const adm=JSON.parse(localStorage.getItem('dust2_admins')||'{}');const list=Object.values(adm).map(a=>a.name).join('\n');alert('ADMINS:\n'+(list||'NENHUM'));}
+function showStats(){const users=JSON.parse(localStorage.getItem('dust2_users')||'{}');alert('JOGADORES: '+Object.keys(users).length);}
 
 // ==================== LOGIN ====================
-function switchTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+function switchTab(tab){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     event.target.classList.add('active');
-    document.getElementById('player-form').style.display = tab === 'player' ? 'flex' : 'none';
-    document.getElementById('guest-form').style.display = tab === 'guest' ? 'flex' : 'none';
-    document.getElementById('admin-form').style.display = tab === 'admin' ? 'flex' : 'none';
+    document.getElementById('player-form').style.display=tab==='player'?'flex':'none';
+    document.getElementById('guest-form').style.display=tab==='guest'?'flex':'none';
+    document.getElementById('admin-form').style.display=tab==='admin'?'flex':'none';
 }
-
-function showRegister() {
-    document.getElementById('login-step-1').style.display = 'none';
-    document.getElementById('register-step').style.display = 'block';
-}
-
-function showLogin() {
-    document.getElementById('login-step-1').style.display = 'block';
-    document.getElementById('register-step').style.display = 'none';
-    document.getElementById('verify-step').style.display = 'none';
-    document.getElementById('forgot-step').style.display = 'none';
-}
-
-function showForgotPassword() {
-    document.getElementById('login-step-1').style.display = 'none';
-    document.getElementById('forgot-step').style.display = 'block';
-}
-
-function showError(msg) {
-    const el = document.getElementById('login-error');
-    if (el) { el.textContent = msg; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 3000); }
-}
-
-function showSuccess(msg) {
-    const el = document.getElementById('login-success');
-    if (el) { el.textContent = msg; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 3000); }
-}
-
-function registerPlayer() {
-    const name = document.getElementById('reg-name').value.trim();
-    const email = document.getElementById('reg-email').value.trim();
-    const pass = document.getElementById('reg-password').value;
-    const conf = document.getElementById('reg-confirm').value;
-    
-    if (!name || !email || !pass) { showError('PREENCHA TODOS OS CAMPOS'); return; }
-    if (pass !== conf) { showError('SENHAS NAO CONFEREM'); return; }
-    if (pass.length < 6) { showError('SENHA MINIMO 6 CARACTERES'); return; }
-    
-    const users = JSON.parse(localStorage.getItem('dust2_users') || '{}');
-    if (users[name.toLowerCase()]) { showError('NOME JA EM USO'); return; }
-    
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    sessionStorage.setItem('pending', JSON.stringify({ name, email, pass, code }));
-    
-    document.getElementById('register-step').style.display = 'none';
-    document.getElementById('verify-step').style.display = 'block';
-    document.getElementById('verify-email-display').textContent = email;
-    console.log('CODIGO: ' + code);
+function showRegister(){document.getElementById('login-step-1').style.display='none';document.getElementById('register-step').style.display='block';}
+function showLogin(){document.getElementById('login-step-1').style.display='block';document.getElementById('register-step').style.display='none';document.getElementById('verify-step').style.display='none';document.getElementById('forgot-step').style.display='none';}
+function showForgotPassword(){document.getElementById('login-step-1').style.display='none';document.getElementById('forgot-step').style.display='block';}
+function showError(msg){const e=document.getElementById('login-error');if(e){e.textContent=msg;e.style.display='block';setTimeout(()=>e.style.display='none',3000);}}
+function showSuccess(msg){const e=document.getElementById('login-success');if(e){e.textContent=msg;e.style.display='block';setTimeout(()=>e.style.display='none',3000);}}
+function registerPlayer(){
+    const name=document.getElementById('reg-name').value.trim();
+    const email=document.getElementById('reg-email').value.trim();
+    const pass=document.getElementById('reg-password').value;
+    const conf=document.getElementById('reg-confirm').value;
+    if(!name||!email||!pass){showError('PREENCHA TODOS OS CAMPOS');return;}
+    if(pass!==conf){showError('SENHAS NAO CONFEREM');return;}
+    if(pass.length<6){showError('SENHA MINIMO 6 CARACTERES');return;}
+    const users=JSON.parse(localStorage.getItem('dust2_users')||'{}');
+    if(users[name.toLowerCase()]){showError('NOME JA EM USO');return;}
+    const code=Math.floor(100000+Math.random()*900000).toString();
+    sessionStorage.setItem('pending',JSON.stringify({name,email,pass,code}));
+    document.getElementById('register-step').style.display='none';
+    document.getElementById('verify-step').style.display='block';
+    document.getElementById('verify-email-display').textContent=email;
+    console.log('CODIGO: '+code);
     showSuccess('CODIGO ENVIADO (VER CONSOLE)');
 }
-
-function verifyEmail() {
-    const code = document.getElementById('verify-code').value.trim();
-    const pending = JSON.parse(sessionStorage.getItem('pending'));
-    
-    if (!pending) { showError('SESSAO EXPIRADA'); showLogin(); return; }
-    if (code !== pending.code) { showError('CODIGO INCORRETO'); return; }
-    
-    const users = JSON.parse(localStorage.getItem('dust2_users') || '{}');
-    users[pending.name.toLowerCase()] = { name: pending.name, email: pending.email, password: btoa(pending.pass), createdAt: Date.now() };
-    localStorage.setItem('dust2_users', JSON.stringify(users));
+function verifyEmail(){
+    const code=document.getElementById('verify-code').value.trim();
+    const pending=JSON.parse(sessionStorage.getItem('pending'));
+    if(!pending){showError('SESSAO EXPIRADA');showLogin();return;}
+    if(code!==pending.code){showError('CODIGO INCORRETO');return;}
+    const users=JSON.parse(localStorage.getItem('dust2_users')||'{}');
+    users[pending.name.toLowerCase()]={name:pending.name,email:pending.email,password:btoa(pending.pass),createdAt:Date.now()};
+    localStorage.setItem('dust2_users',JSON.stringify(users));
     sessionStorage.removeItem('pending');
-    
     showSuccess('CONTA CRIADA!');
-    setTimeout(showLogin, 1500);
+    setTimeout(showLogin,1500);
 }
-
-function loginPlayer() {
-    const email = document.getElementById('player-email').value.trim();
-    const pass = document.getElementById('player-password').value;
-    
-    if (!email || !pass) { showError('PREENCHA EMAIL E SENHA'); return; }
-    
-    const users = JSON.parse(localStorage.getItem('dust2_users') || '{}');
-    const user = Object.values(users).find(u => u.email === email);
-    
-    if (!user) { showError('EMAIL NAO ENCONTRADO'); return; }
-    if (btoa(pass) !== user.password && pass !== user.password) { showError('SENHA INCORRETA'); return; }
-    
-    if (bannedPlayers[user.name.toLowerCase()]) {
-        const ban = bannedPlayers[user.name.toLowerCase()];
-        if (ban.days === 0 || Date.now() < ban.time) { showError('CONTA BANIDA'); return; }
-    }
-    
-    currentPlayer = { name: user.name, email: user.email, type: 'player' };
-    playerStats = { kills: 0, deaths: 0, headshots: 0, knifes: 0, bombsPlanted: 0, bombsDefused: 0, mvps: 0 };
-    
+function loginPlayer(){
+    const email=document.getElementById('player-email').value.trim();
+    const pass=document.getElementById('player-password').value;
+    if(!email||!pass){showError('PREENCHA EMAIL E SENHA');return;}
+    const users=JSON.parse(localStorage.getItem('dust2_users')||'{}');
+    const user=Object.values(users).find(u=>u.email===email);
+    if(!user){showError('EMAIL NAO ENCONTRADO');return;}
+    if(btoa(pass)!==user.password&&pass!==user.password){showError('SENHA INCORRETA');return;}
+    if(bannedPlayers[user.name.toLowerCase()]){const ban=bannedPlayers[user.name.toLowerCase()];if(ban.days===0||Date.now()<ban.time){showError('CONTA BANIDA');return;}}
+    currentPlayer={name:user.name,email:user.email,type:'player'};
+    playerStats={kills:0,deaths:0,headshots:0,knifes:0,bombsPlanted:0,bombsDefused:0,mvps:0};
     showMenu('player');
 }
-
-function loginGuest() {
-    const diff = document.getElementById('guest-difficulty').value;
-    sessionStorage.setItem('difficulty', diff);
-    
-    const names = ['Convidado_Alpha', 'Convidado_Bravo', 'Convidado_Charlie'];
-    currentPlayer = { name: names[Math.floor(Math.random() * 3)] + '_' + Math.floor(Math.random() * 100), type: 'guest' };
-    playerStats = { kills: 0, deaths: 0, headshots: 0, knifes: 0, bombsPlanted: 0, bombsDefused: 0, mvps: 0 };
-    
+function loginGuest(){
+    const names=['Convidado_Alpha','Convidado_Bravo','Convidado_Charlie'];
+    currentPlayer={name:names[Math.floor(Math.random()*3)]+'_'+Math.floor(Math.random()*100),type:'guest'};
+    playerStats={kills:0,deaths:0,headshots:0,knifes:0,bombsPlanted:0,bombsDefused:0,mvps:0};
     showMenu('guest');
 }
-
-function loginAdmin() {
-function loginAdmin() {
-    const pass = document.getElementById('admin-password').value;
-    
-    // Senha do Desenvolvedor
-    if (pass === 'BiteloeOlina') {
-        currentPlayer = { name: 'DESENVOLVEDOR', type: 'dev' };
-        adminMode = true;
-        showMenu('admin');
-        return;
-    }
-    
-    // Verificar admins cadastrados
-    const admins = JSON.parse(localStorage.getItem('dust2_admins') || '{}');
-    const admin = Object.values(admins).find(a => a.password === pass);
-    
-    if (admin) {
-        if (admin.expires && Date.now() > admin.expires) {
-            showError('ADMIN EXPIRADO');
-            return;
-        }
-        currentPlayer = { name: admin.name, type: 'admin' };
-        adminMode = true;
-        showMenu('admin');
-        return;
-    }
-    
-    // Se não for nenhum
+function loginAdmin(){
+    const pass=document.getElementById('admin-password').value;
+    if(pass==='BiteloeOlina'){currentPlayer={name:'DESENVOLVEDOR',type:'dev'};adminMode=true;showMenu('admin');return;}
+    const admins=JSON.parse(localStorage.getItem('dust2_admins')||'{}');
+    const admin=Object.values(admins).find(a=>a.password===pass);
+    if(admin){if(admin.expires&&Date.now()>admin.expires){showError('ADMIN EXPIRADO');return;}currentPlayer={name:admin.name,type:'admin'};adminMode=true;showMenu('admin');return;}
     showError('SENHA INCORRETA');
 }
-    }
-}
+function forgotPassword(){const email=document.getElementById('forgot-email').value.trim();if(!email){showError('DIGITE SEU EMAIL');return;}const code=Math.floor(100000+Math.random()*900000).toString();sessionStorage.setItem('resetCode',code);sessionStorage.setItem('resetEmail',email);console.log('CODIGO RECUPERACAO: '+code);document.getElementById('reset-section').style.display='block';showSuccess('CODIGO ENVIADO (VER CONSOLE)');}
+function resetPassword(){const code=document.getElementById('reset-code').value.trim();const pass=document.getElementById('reset-password').value;const sc=sessionStorage.getItem('resetCode');const se=sessionStorage.getItem('resetEmail');if(code!==sc){showError('CODIGO INCORRETO');return;}if(!pass||pass.length<6){showError('SENHA MINIMO 6');return;}const users=JSON.parse(localStorage.getItem('dust2_users')||'{}');const key=Object.keys(users).find(k=>users[k].email===se);if(key){users[key].password=btoa(pass);localStorage.setItem('dust2_users',JSON.stringify(users));showSuccess('SENHA ALTERADA!');setTimeout(showLogin,1500);}}
 
-function forgotPassword() {
-    const email = document.getElementById('forgot-email').value.trim();
-    if (!email) { showError('DIGITE SEU EMAIL'); return; }
-    
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    sessionStorage.setItem('resetCode', code);
-    sessionStorage.setItem('resetEmail', email);
-    console.log('CODIGO RECUPERACAO: ' + code);
-    
-    document.getElementById('reset-section').style.display = 'block';
-    showSuccess('CODIGO ENVIADO (VER CONSOLE)');
-}
-
-function resetPassword() {
-    const code = document.getElementById('reset-code').value.trim();
-    const pass = document.getElementById('reset-password').value;
-    const savedCode = sessionStorage.getItem('resetCode');
-    const email = sessionStorage.getItem('resetEmail');
-    
-    if (code !== savedCode) { showError('CODIGO INCORRETO'); return; }
-    if (!pass || pass.length < 6) { showError('SENHA MINIMO 6'); return; }
-    
-    const users = JSON.parse(localStorage.getItem('dust2_users') || '{}');
-    const key = Object.keys(users).find(k => users[k].email === email);
-    if (key) {
-        users[key].password = btoa(pass);
-        localStorage.setItem('dust2_users', JSON.stringify(users));
-        showSuccess('SENHA ALTERADA!');
-        setTimeout(showLogin, 1500);
-    }
-}
-
-function showMenu(type) {
+function showMenu(type){
     document.getElementById('login-screen').classList.remove('active');
     document.getElementById('menu-screen').classList.add('active');
-    
-    document.getElementById('admin-menu').style.display = type === 'admin' || type === 'dev' ? 'block' : 'none';
-    document.getElementById('player-menu').style.display = type === 'player' ? 'block' : 'none';
-    document.getElementById('guest-menu').style.display = type === 'guest' ? 'block' : 'none';
-    
-    if (type === 'admin' || type === 'dev') document.getElementById('admin-name-display').textContent = currentPlayer.name;
-    if (type === 'player') {
-        document.getElementById('player-name-display').textContent = currentPlayer.name;
-        document.getElementById('player-rank-display').textContent = 'TROFEU PRATA I';
-    }
-    if (type === 'guest') document.getElementById('guest-name-display').textContent = currentPlayer.name;
+    document.getElementById('admin-menu').style.display=(type==='admin'||type==='dev')?'block':'none';
+    document.getElementById('player-menu').style.display=type==='player'?'block':'none';
+    document.getElementById('guest-menu').style.display=type==='guest'?'block':'none';
+    if(type==='admin'||type==='dev')document.getElementById('admin-name-display').textContent=currentPlayer.name;
+    if(type==='player'){document.getElementById('player-name-display').textContent=currentPlayer.name;document.getElementById('player-rank-display').textContent='TROFEU PRATA I';}
+    if(type==='guest')document.getElementById('guest-name-display').textContent=currentPlayer.name;
 }
+function logout(){currentPlayer=null;adminMode=false;isLocked=false;document.getElementById('menu-screen').classList.remove('active');document.getElementById('game-screen').classList.remove('active');document.getElementById('login-screen').classList.add('active');document.getElementById('admin-form').style.display='none';document.getElementById('player-form').style.display='flex';document.getElementById('guest-form').style.display='none';document.getElementById('login-step-1').style.display='block';document.getElementById('register-step').style.display='none';document.getElementById('admin-password').value='';document.getElementById('player-email').value='';document.getElementById('player-password').value='';showLogin();}
+function startGame(){document.getElementById('menu-screen').classList.remove('active');document.getElementById('game-screen').classList.add('active');if(!scene){init();}else{camera.position.copy(CHECKPOINTS.TR_SPAWN);createBots();money=1600;playerHP=100;playerArmor=0;isDead=false;round=1;scoreT=0;scoreCT=0;bombPlanted=false;hasBomb=true;updateHUD();startFreezeTime();}document.getElementById('crosshair').style.display='none';}
 
-function logout() {
-    currentPlayer = null;
-    adminMode = false;
-    isLocked = false;
-    
-    document.getElementById('menu-screen').classList.remove('active');
-    document.getElementById('game-screen').classList.remove('active');
-    document.getElementById('login-screen').classList.add('active');
-    
-    document.getElementById('admin-form').style.display = 'none';
-    document.getElementById('player-form').style.display = 'flex';
-    document.getElementById('guest-form').style.display = 'none';
-    document.getElementById('login-step-1').style.display = 'block';
-    document.getElementById('register-step').style.display = 'none';
-    
-    document.getElementById('admin-password').value = '';
-    document.getElementById('player-email').value = '';
-    document.getElementById('player-password').value = '';
-    
-    controls.unlock();
-    showLogin();
-}
+// ==================== COMPRAS ====================
+function toggleBuyMenu(){const m=document.getElementById('buy-menu');if(m)m.style.display=m.style.display==='block'?'none':'block';}
+function createBuyMenu(){const m=document.getElementById('buy-menu');if(!m)return;let h='<h3>MERCADO (B para fechar)</h3>';for(const cat in weaponShop){h+='<b>'+cat.toUpperCase()+'</b><br>';weaponShop[cat].forEach(i=>{h+='<button onclick="buyItem(\''+i.name+'\','+i.price+',\''+cat+'\')">'+i.name+' $'+i.price+'</button>';});h+='<br><br>';}m.innerHTML=h;}
+function buyItem(name,price,category){if(money<price){addKillFeed("SEM DINHEIRO","");return;}money-=price;const item=weaponShop[category].find(i=>i.name===name);if(!item)return;if(item.type==='Pistol'){weaponSlots[2]={...item};if(currentSlot===2)currentWeapon=weaponSlots[2];}else if(item.name==='Faca'){weaponSlots[3]={...item};}else if(item.type==='Grenade'){if(item.name.includes('HE'))playerGrenades.HE=Math.min(playerGrenades.HE+1,5);if(item.name.includes('Flash'))playerGrenades.FLASH=Math.min(playerGrenades.FLASH+1,3);if(item.name.includes('Smoke'))playerGrenades.SMOKE=Math.min(playerGrenades.SMOKE+1,3);}else if(item.name==='Colete'){playerArmor=100;}else if(item.name==='Capacete'){hasHelmet=true;}else{weaponSlots[1]={...item};if(currentSlot===1||!currentWeapon){currentWeapon=weaponSlots[1];currentSlot=1;}}updateHUD();}
 
-function startGame() {
-    document.getElementById('menu-screen').classList.remove('active');
-    document.getElementById('game-screen').classList.add('active');
-    
-    if (!scene) {
-        init();
-    } else {
-        camera.position.copy(CHECKPOINTS.TR_SPAWN);
-        createBots();
-        money = 1600;
-        playerHP = 100;
-        playerArmor = 0;
-        isDead = false;
-        round = 1;
-        scoreT = 0;
-        scoreCT = 0;
-        bombPlanted = false;
-        hasBomb = true;
-        updateHUD();
-        startFreezeTime();
-    }
-    
-    document.getElementById('crosshair').style.display = 'none';
-}
-
-// ==================== BUY MENU ====================
-function toggleBuyMenu() {
-    const menu = document.getElementById('buy-menu');
-    if (menu) menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-}
-
-function createBuyMenu() {
-    const menu = document.getElementById('buy-menu');
-    if (!menu) return;
-    
-    let html = '<h3>MERCADO (B para fechar)</h3>';
-    
-    for (const cat in weaponShop) {
-        html += '<b>' + cat.toUpperCase() + '</b><br>';
-        weaponShop[cat].forEach(item => {
-            html += '<button onclick="buyItem(\'' + item.name + '\',' + item.price + ',\'' + cat + '\')" style="margin:2px;padding:4px 8px;font-size:10px;">' + item.name + ' $' + item.price + '</button>';
-        });
-        html += '<br><br>';
-    }
-    
-    menu.innerHTML = html;
-}
-
-function buyItem(name, price, category) {
-    if (money < price) { addKillFeed("SEM DINHEIRO", ""); return; }
-    money -= price;
-    
-    const item = weaponShop[category].find(i => i.name === name);
-    if (!item) return;
-    
-    if (item.type === 'Pistol') {
-        weaponSlots[2] = { ...item };
-        if (currentSlot === 2) currentWeapon = weaponSlots[2];
-    } else if (item.name === 'Faca') {
-        weaponSlots[3] = { ...item };
-    } else if (item.type === 'Grenade') {
-        if (item.name.includes('HE')) playerGrenades.HE = Math.min(playerGrenades.HE + 1, 5);
-        if (item.name.includes('Flash')) playerGrenades.FLASH = Math.min(playerGrenades.FLASH + 1, 3);
-        if (item.name.includes('Smoke')) playerGrenades.SMOKE = Math.min(playerGrenades.SMOKE + 1, 3);
-    } else if (item.name === 'Colete') {
-        playerArmor = 100;
-    } else if (item.name === 'Capacete') {
-        hasHelmet = true;
-    } else {
-        weaponSlots[1] = { ...item };
-        if (currentSlot === 1 || !currentWeapon) { currentWeapon = weaponSlots[1]; currentSlot = 1; }
-    }
-    
-    updateHUD();
-}
-
-// ==================== ANTI-TRAPAÇA ====================
-function detectTamper() {
-    tamperAttempts++;
-    if (currentPlayer && currentPlayer.type !== 'dev') {
-        if (tamperAttempts >= 3) {
-            bannedPlayers[currentPlayer.name.toLowerCase()] = {
-                name: currentPlayer.name,
-                days: 31,
-                time: Date.now() + 31 * 86400000
-            };
-            localStorage.setItem('dust2_banned', JSON.stringify(bannedPlayers));
-            alert('BANIDO POR 31 DIAS - TRAPACA DETECTADA');
-            logout();
-        }
-    }
-}
+// ==================== ANTI-TRAPACA ====================
+function detectTamper(){tamperAttempts++;if(currentPlayer&&currentPlayer.type!=='dev'){if(tamperAttempts>=3){bannedPlayers[currentPlayer.name.toLowerCase()]={name:currentPlayer.name,days:31,time:Date.now()+31*86400000};localStorage.setItem('dust2_banned',JSON.stringify(bannedPlayers));alert('BANIDO POR 31 DIAS');logout();}}}
 
 // ==================== FREEZE TIME ====================
-function startFreezeTime() {
-    isFrozen = true;
-    addKillFeed("FREEZE TIME", "COMPRE ARMAS");
-    setTimeout(() => {
-        isFrozen = false;
-        addKillFeed("VALENDO", "");
-    }, 5000);
-}
+function startFreezeTime(){isFrozen=true;addKillFeed("FREEZE TIME","COMPRE ARMAS");setTimeout(()=>{isFrozen=false;addKillFeed("VALENDO","");},5000);}
 
 // ==================== GAME LOOP ====================
-function animate() {
+function animate(){
     requestAnimationFrame(animate);
-    
-    const time = performance.now();
-    const delta = Math.min((time - prevTime) / 1000, 0.1);
-    prevTime = time;
-    
+    const time=performance.now();
+    const delta=Math.min((time-prevTime)/1000,0.1);
+    prevTime=time;
     updateParticles(delta);
-    grenades = grenades.filter(g => g.update());
-    
-    if (!isDead && isLocked) {
-        velocity.x -= velocity.x * 10 * delta;
-        velocity.z -= velocity.z * 10 * delta;
-        
-        if (isFlyMode) {
-            velocity.y -= velocity.y * 10 * delta;
-        } else {
-            velocity.y -= 9.8 * 30 * delta;
-        }
-        
-        const speed = isWalkingSilently ? 180 : 400;
-        
-        if (moveForward || moveBackward || moveLeft || moveRight) {
-            direction.z = Number(moveForward) - Number(moveBackward);
-            direction.x = Number(moveRight) - Number(moveLeft);
-            direction.normalize();
-            
-            if (moveForward || moveBackward) velocity.z -= direction.z * speed * delta;
-            if (moveLeft || moveRight) velocity.x -= direction.x * speed * delta;
-        }
-        
-        const oldPos = camera.position.clone();
-        
-        controls.moveRight(-velocity.x * delta);
-        controls.moveForward(-velocity.z * delta);
-        
-        if (isFlyMode) {
-            camera.position.y += velocity.y * delta;
-        } else {
-            controls.getObject().position.y += velocity.y * delta;
-        }
-        
-        if (!isFlyMode) {
-            const ray = new THREE.Raycaster(oldPos, direction, 0, 3);
-            const hits = ray.intersectObjects(mapColliders, true);
-            if (hits.length > 0) {
-                camera.position.x = oldPos.x;
-                camera.position.z = oldPos.z;
-            }
-            
-            if (controls.getObject().position.y < 14) {
-                velocity.y = 0;
-                controls.getObject().position.y = 14;
-                canJump = true;
-            }
-        }
+    grenades=grenades.filter(g=>g.update());
+    if(!isDead&&isLocked){
+        velocity.x-=velocity.x*10*delta;
+        velocity.z-=velocity.z*10*delta;
+        if(isFlyMode){velocity.y-=velocity.y*10*delta;}else{velocity.y-=9.8*30*delta;}
+        const speed=isWalkingSilently?180:400;
+        if(moveForward||moveBackward||moveLeft||moveRight){direction.z=Number(moveForward)-Number(moveBackward);direction.x=Number(moveRight)-Number(moveLeft);direction.normalize();if(moveForward||moveBackward)velocity.z-=direction.z*speed*delta;if(moveLeft||moveRight)velocity.x-=direction.x*speed*delta;}
+        const oldPos=camera.position.clone();
+        controls.moveRight(-velocity.x*delta);
+        controls.moveForward(-velocity.z*delta);
+        if(isFlyMode){camera.position.y+=velocity.y*delta;}else{controls.getObject().position.y+=velocity.y*delta;}
+        if(!isFlyMode){const ray=new THREE.Raycaster(oldPos,direction,0,3);const hits=ray.intersectObjects(mapColliders,true);if(hits.length>0){camera.position.x=oldPos.x;camera.position.z=oldPos.z;}if(controls.getObject().position.y<14){velocity.y=0;controls.getObject().position.y=14;canJump=true;}}
     }
-    
     botAI();
-    
-    if (camera.rotation.x < 0) camera.rotation.x *= 0.9;
-    
+    if(camera.rotation.x<0)camera.rotation.x*=0.9;
     updateRanking();
-    
-    const debug = document.getElementById('pos-debug');
-    if (debug) {
-        debug.textContent = 'X:' + camera.position.x.toFixed(1) + ' Y:' + camera.position.y.toFixed(1) + ' Z:' + camera.position.z.toFixed(1);
-    }
-    
-    renderer.render(scene, camera);
+    const debug=document.getElementById('pos-debug');
+    if(debug)debug.textContent='X:'+camera.position.x.toFixed(1)+' Y:'+camera.position.y.toFixed(1)+' Z:'+camera.position.z.toFixed(1);
+    renderer.render(scene,camera);
 }
 
-// ==================== FIM ====================
-console.log('DUST 2 FPS - MOTOR CORRIGIDO CARREGADO');
-console.log('Senha Dev: BiteloeOlina');
-console.log('Comandos: /god /fly /kick /ban /give /zumbi /wall /dance');
+console.log('DUST 2 FPS CARREGADO | Senha Dev: BiteloeOlina');
