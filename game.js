@@ -220,7 +220,7 @@ function createMap() {
     
     // Tentar carregar mapa 3D
     const loader = new THREE.GLTFLoader();
-    loader.load('dust2.glb', 
+    loader.load('./dust2.glb', 
         (gltf) => {
             // Sucesso! Mapa carregado
             const mapa = gltf.scene;
