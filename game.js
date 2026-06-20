@@ -1099,14 +1099,49 @@ function releaseGrenade() {
     document.getElementById('grenade-power-indicator').style.display = 'none';
 }
 
-// ==================== CONFIGURAÇÕES ====================
 function toggleSettings() {
     const panel = document.getElementById('settings-panel');
     if (!panel) return;
-    const open = panel.style.display === 'block';
-    panel.style.display = open ? 'none' : 'block';
-    if (open && !isChatOpen) controls.lock();
-    else controls.unlock();
+    
+    const isOpen = panel.style.display === 'block';
+    
+    if (isOpen) {
+        panel.style.display = 'none';
+        backToMenu();
+    } else {
+        panel.style.display = 'block';
+        controls.unlock();
+    }
+}
+
+function backToMenu() {
+    // Esconder todos painéis
+    ['settings-panel', 'admin-panel', 'admin-log', 'secret-chat', 'create-room-form'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+    
+    // Fechar chat
+    if (isChatOpen) {
+        isChatOpen = false;
+        document.getElementById('chat-input').style.display = 'none';
+        document.getElementById('chat-box').style.display = 'none';
+    }
+    
+    // Voltar pro menu
+    document.getElementById('game-screen').classList.remove('active');
+    document.getElementById('menu-screen').classList.add('active');
+    
+    // Mostrar menu certo
+    if (currentPlayer) {
+        const type = currentPlayer.type;
+        document.getElementById('admin-menu').style.display = (type === 'dev' || type === 'admin') ? 'block' : 'none';
+        document.getElementById('player-menu').style.display = (type === 'player') ? 'block' : 'none';
+        document.getElementById('guest-menu').style.display = (type === 'guest') ? 'block' : 'none';
+    }
+    
+    controls.unlock();
+    isLocked = false;
 }
 
 function showSettings() {
@@ -1119,7 +1154,15 @@ function showSettings() {
 // ==================== ADMIN PAINEL ====================
 function toggleAdminPanel() {
     const panel = document.getElementById('admin-panel');
-    if (panel) panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    if (!panel) return;
+    
+    if (panel.style.display === 'block') {
+        panel.style.display = 'none';
+        backToMenu();
+    } else {
+        panel.style.display = 'block';
+        controls.unlock();
+    }
 }
 
 function showAdminLog() {
@@ -1162,8 +1205,9 @@ function hideCreateRoom() {
     document.getElementById('create-room-form').style.display = 'none';
 }
 
-function createRoom() {
-    showCreateRoom();
+function hideCreateRoom() {
+    document.getElementById('create-room-form').style.display = 'none';
+    backToMenu();
 }
 
 function confirmCreateRoom() {
@@ -1409,9 +1453,23 @@ function showMenu(type) {
 function logout() {
     currentPlayer = null;
     adminMode = false;
+    isLocked = false;
+    
     document.getElementById('menu-screen').classList.remove('active');
     document.getElementById('game-screen').classList.remove('active');
     document.getElementById('login-screen').classList.add('active');
+    
+    document.getElementById('admin-form').style.display = 'none';
+    document.getElementById('player-form').style.display = 'flex';
+    document.getElementById('guest-form').style.display = 'none';
+    document.getElementById('login-step-1').style.display = 'block';
+    document.getElementById('register-step').style.display = 'none';
+    
+    document.getElementById('admin-password').value = '';
+    document.getElementById('player-email').value = '';
+    document.getElementById('player-password').value = '';
+    
+    controls.unlock();
     showLogin();
 }
 
@@ -1419,7 +1477,25 @@ function startGame() {
     document.getElementById('menu-screen').classList.remove('active');
     document.getElementById('game-screen').classList.add('active');
     
-    if (!scene) init();
+    if (!scene) {
+        init();
+    } else {
+        camera.position.copy(CHECKPOINTS.TR_SPAWN);
+        createBots();
+        money = 1600;
+        playerHP = 100;
+        playerArmor = 0;
+        isDead = false;
+        round = 1;
+        scoreT = 0;
+        scoreCT = 0;
+        bombPlanted = false;
+        hasBomb = true;
+        updateHUD();
+        startFreezeTime();
+    }
+    
+    document.getElementById('crosshair').style.display = 'none';
 }
 
 // ==================== BUY MENU ====================
