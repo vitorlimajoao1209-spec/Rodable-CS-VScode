@@ -1,4 +1,4 @@
-// ==================== DUST 2 FPS - MOTOR COMPLETO ====================
+// ==================== DUST 2 FPS - MOTOR SIMPLIFICADO ====================
 
 // Three.js
 let scene, camera, renderer, controls;
@@ -40,19 +40,11 @@ let bombTimer = null;
 let hasBomb = true;
 let isFrozen = true;
 let mapColliders = [];
-let particleSystems = [];
 let grenades = [];
 
 // Granadas
 let playerGrenades = { HE: 1, FLASH: 0, SMOKE: 0, MOLOTOV: 0 };
 let selectedGrenadeType = 'HE';
-let isHoldingGrenade = false;
-let grenadeHoldStartTime = 0;
-let grenadeThrowPower = 0;
-
-// Spray
-let sprayCounter = 0;
-let lastSprayTime = 0;
 
 // Chat
 let isChatOpen = false;
@@ -72,18 +64,15 @@ let crosshairColor = '#00ff00';
 
 // Login
 let currentPlayer = null;
+let logoClickCount = 0;
+let playerStats = { kills: 0, deaths: 0, headshots: 0, bombsPlanted: 0, mvps: 0 };
 
-// Ranking
-let playerStats = { kills: 0, deaths: 0, headshots: 0, knifes: 0, bombsPlanted: 0, bombsDefused: 0, mvps: 0 };
-let killStreak = 0;
-let lastKillTime = 0;
-
-// ==================== COORDENADAS ====================
+// ==================== COORDENADAS CORRIGIDAS ====================
 const CHECKPOINTS = {
-    TR_SPAWN: new THREE.Vector3(0, 16, -40),
-    CT_SPAWN: new THREE.Vector3(0, 16, 40),
-    BOMB_A: new THREE.Vector3(15, 14, 0),
-    BOMB_B: new THREE.Vector3(-15, 14, 0)
+    TR_SPAWN: new THREE.Vector3(0, 16, -35),
+    CT_SPAWN: new THREE.Vector3(0, 16, 35),
+    BOMB_A: new THREE.Vector3(10, 14, 0),
+    BOMB_B: new THREE.Vector3(-10, 14, 0)
 };
 
 // ==================== ARSENAL ====================
@@ -112,7 +101,7 @@ const weaponShop = {
     ]
 };
 
-// ==================== AUDIO ====================
+// ==================== AUDIO SIMPLES ====================
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function playSound(type) {
@@ -124,37 +113,31 @@ function playSound(type) {
     
     switch(type) {
         case 'shoot':
-            osc.type = 'sawtooth';
-            osc.frequency.value = 150;
+            osc.type = 'sawtooth'; osc.frequency.value = 150;
             gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
             gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
             osc.start(); osc.stop(audioCtx.currentTime + 0.08);
             break;
         case 'headshot':
-            osc.type = 'square';
-            osc.frequency.value = 800;
+            osc.type = 'square'; osc.frequency.value = 800;
             gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
             gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
             osc.start(); osc.stop(audioCtx.currentTime + 0.1);
             break;
         case 'explode':
-            osc.type = 'triangle';
-            osc.frequency.value = 60;
+            osc.type = 'triangle'; osc.frequency.value = 60;
             gain.gain.setValueAtTime(0.6, audioCtx.currentTime);
             gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
             osc.start(); osc.stop(audioCtx.currentTime + 0.6);
             break;
         case 'beep':
-            osc.type = 'sine';
-            osc.frequency.value = 900;
+            osc.type = 'sine'; osc.frequency.value = 900;
             gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
             osc.start(); osc.stop(audioCtx.currentTime + 0.04);
             break;
         case 'radio':
-            osc.type = 'triangle';
-            osc.frequency.value = 400;
+            osc.type = 'triangle'; osc.frequency.value = 400;
             gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
             osc.start(); osc.stop(audioCtx.currentTime + 0.2);
             break;
     }
@@ -163,8 +146,7 @@ function playSound(type) {
 // ==================== INICIALIZACAO ====================
 function init() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x444444);
-    scene.fog = new THREE.Fog(0x444444, 100, 400);
+    scene.background = new THREE.Color(0x7799aa);
     
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.copy(CHECKPOINTS.TR_SPAWN);
@@ -189,26 +171,23 @@ function init() {
 }
 
 function setupEventListeners() {
-    document.addEventListener('click', () => {
-        if (!isChatOpen) controls.lock();
-    });
-    
-    controls.addEventListener('lock', () => {
-        isLocked = true;
-        document.getElementById('crosshair').style.display = 'block';
-    });
-    
-    controls.addEventListener('unlock', () => {
-        isLocked = false;
-        document.getElementById('crosshair').style.display = 'none';
-    });
-    
+    document.addEventListener('click', () => { if (!isChatOpen) controls.lock(); });
+    controls.addEventListener('lock', () => { isLocked = true; document.getElementById('crosshair').style.display = 'block'; });
+    controls.addEventListener('unlock', () => { isLocked = false; document.getElementById('crosshair').style.display = 'none'; });
     document.addEventListener('mousedown', onMouseDown);
-    document.addEventListener('mouseup', onMouseUp);
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
     window.addEventListener('resize', onResize);
+    
+    // Admin secreto: 7 cliques no logo
+    document.getElementById('logo-click').addEventListener('click', () => {
+        logoClickCount++;
+        if (logoClickCount >= 7) {
+            logoClickCount = 0;
+            document.getElementById('admin-secret').style.display = 'block';
+        }
+    });
 }
 
 function setupWeapons() {
@@ -222,17 +201,14 @@ function setupWeapons() {
 }
 
 function createMap() {
-    scene.add(new THREE.AmbientLight(0x888888, 0.6));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
     const sun = new THREE.DirectionalLight(0xffeedd, 0.8);
     sun.position.set(50, 100, 50);
     scene.add(sun);
     
-    const floorGeom = new THREE.PlaneGeometry(200, 200);
-    const floorMat = new THREE.MeshLambertMaterial({ color: 0x888866 });
-    const floor = new THREE.Mesh(floorGeom, floorMat);
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshLambertMaterial({ color: 0x888866 }));
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = 14;
-    floor.receiveShadow = true;
     scene.add(floor);
     mapColliders.push(floor);
     
@@ -243,20 +219,11 @@ function createMap() {
         { pos: [-40, 17, 0], size: [2, 6, 90] },
         { pos: [40, 17, 0], size: [2, 6, 90] }
     ];
-    
     walls.forEach(w => {
         const wall = new THREE.Mesh(new THREE.BoxGeometry(...w.size), wallMat);
         wall.position.set(...w.pos);
         scene.add(wall);
         mapColliders.push(wall);
-    });
-    
-    const siteMat = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.2 });
-    [CHECKPOINTS.BOMB_A, CHECKPOINTS.BOMB_B].forEach(site => {
-        const marker = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 0.1, 16), siteMat);
-        marker.position.copy(site);
-        marker.position.y = 14;
-        scene.add(marker);
     });
 }
 
@@ -264,22 +231,16 @@ function createMap() {
 function createBots() {
     bots.forEach(b => scene.remove(b));
     bots = [];
-    
     const botCount = parseInt(sessionStorage.getItem('botCount') || '5');
     
     for (let i = 0; i < botCount; i++) {
         const bot = new THREE.Group();
-        
         const head = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), new THREE.MeshLambertMaterial({ color: 0xcc6666 }));
-        head.position.y = 2.1;
-        head.name = "HEADSHOT";
-        
+        head.position.y = 2.1; head.name = "HEADSHOT";
         const chest = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.2, 1.2), new THREE.MeshLambertMaterial({ color: 0x883333 }));
         chest.position.y = 0.8;
-        
         const legs = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.5, 1.0), new THREE.MeshLambertMaterial({ color: 0x662222 }));
         legs.position.y = -1.0;
-        
         bot.add(head); bot.add(chest); bot.add(legs);
         
         bot.position.copy(CHECKPOINTS.CT_SPAWN);
@@ -292,7 +253,6 @@ function createBots() {
             lastShotTime: 0, targetSite: i % 2 === 0 ? CHECKPOINTS.BOMB_A : CHECKPOINTS.BOMB_B,
             currentState: 'PATROL', reactionTime: 800 + Math.random() * 1200, accuracy: 0.3
         };
-        
         scene.add(bot);
         bots.push(bot);
     }
@@ -309,7 +269,6 @@ function shoot() {
     currentWeapon.ammo--;
     updateHUD();
     playSound('shoot');
-    
     camera.rotation.x -= currentWeapon.recoil * 0.5;
     
     const raycaster = new THREE.Raycaster();
@@ -318,8 +277,6 @@ function shoot() {
     
     if (intersects.length > 0) {
         const hit = intersects[0];
-        createImpactParticles(hit.point);
-        
         let target = hit.object;
         while (target && !target.userData.health) target = target.parent;
         
@@ -337,11 +294,8 @@ function handleKill(bot) {
     bots = bots.filter(b => b !== bot);
     money += 300;
     playerStats.kills++;
-    killStreak++;
-    lastKillTime = Date.now();
     addKillFeed("ELIMINOU", bot.userData.name);
     updateHUD();
-    updateRanking();
     checkRoundEnd();
 }
 
@@ -350,22 +304,17 @@ function takeDamage(amount) {
     if (isDead || godMode) return;
     let damage = amount;
     if (playerArmor > 0) {
-        const armorRatio = hasHelmet ? 0.7 : 0.5;
-        const armorDmg = Math.floor(damage * armorRatio);
+        const armorDmg = Math.floor(damage * (hasHelmet ? 0.7 : 0.5));
         if (playerArmor >= armorDmg) { playerArmor -= armorDmg; damage -= armorDmg; }
         else { damage -= playerArmor; playerArmor = 0; }
     }
     playerHP -= Math.floor(damage);
-    const overlay = document.createElement('div');
-    overlay.className = 'damage-overlay';
-    document.body.appendChild(overlay);
-    setTimeout(() => overlay.remove(), 300);
     updateHUD(); updateHealthBars();
     if (playerHP <= 0) { playerHP = 0; playerDeath(); }
 }
 
 function playerDeath() {
-    isDead = true; killStreak = 0; playerStats.deaths++;
+    isDead = true; playerStats.deaths++;
     const death = document.createElement('div');
     death.className = 'death-screen'; death.textContent = 'MORTO';
     document.body.appendChild(death);
@@ -376,7 +325,7 @@ function playerDeath() {
     }, 2500);
 }
 
-// ==================== IA ====================
+// ==================== IA DOS BOTS ====================
 function botAI() {
     if (!isLocked || isFrozen || isDead) return;
     const now = Date.now();
@@ -412,8 +361,7 @@ class Grenade {
         this.mesh = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color: type === 'HE' ? 0x00ff00 : 0xffffff }));
         this.mesh.position.copy(pos);
         this.type = type;
-        const speed = 8 * (0.5 + power * 1.5);
-        this.velocity = dir.clone().multiplyScalar(speed);
+        this.velocity = dir.clone().multiplyScalar(8 * (0.5 + power * 1.5));
         this.velocity.y += 5;
         this.time = Date.now();
         this.fuse = 3000;
@@ -424,17 +372,15 @@ class Grenade {
         if (this.exploded) return false;
         this.velocity.y -= 0.4;
         this.mesh.position.add(this.velocity.clone().multiplyScalar(0.08));
-        if (this.mesh.position.y < 14) { this.mesh.position.y = 14; this.velocity.y *= -0.3; this.velocity.x *= 0.8; this.velocity.z *= 0.8; }
+        if (this.mesh.position.y < 14) { this.mesh.position.y = 14; this.velocity.y *= -0.3; }
         if (Date.now() - this.time > this.fuse) { this.explode(); return false; }
         return true;
     }
     explode() {
         this.exploded = true; playSound('explode');
-        const pos = this.mesh.position;
-        for (let i = 0; i < 15; i++) createImpactParticles(pos.clone().add(new THREE.Vector3((Math.random()-0.5)*4, Math.random()*4, (Math.random()-0.5)*4)));
         if (this.type === 'HE') {
-            bots.forEach(bot => { if (bot.position.distanceTo(pos) < 10) { bot.userData.health -= 60; if (bot.userData.health <= 0) handleKill(bot); } });
-            if (camera.position.distanceTo(pos) < 10) takeDamage(40);
+            bots.forEach(bot => { if (bot.position.distanceTo(this.mesh.position) < 10) { bot.userData.health -= 60; if (bot.userData.health <= 0) handleKill(bot); } });
+            if (camera.position.distanceTo(this.mesh.position) < 10) takeDamage(40);
         }
         setTimeout(() => scene.remove(this.mesh), 500);
     }
@@ -445,36 +391,10 @@ function throwGrenade(power = 0.5) {
     if (playerGrenades[selectedGrenadeType] <= 0) return;
     playerGrenades[selectedGrenadeType]--;
     const pos = camera.position.clone();
-    const dir = new THREE.Vector3();
-    camera.getWorldDirection(dir);
+    const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
     pos.add(dir.clone().multiplyScalar(1.5));
     grenades.push(new Grenade(pos, dir, selectedGrenadeType, power));
     updateGrenadeIndicator();
-}
-
-// ==================== PARTICULAS ====================
-function createImpactParticles(pos) {
-    const geom = new THREE.BufferGeometry();
-    const positions = [], vels = [];
-    for (let i = 0; i < 10; i++) { positions.push(pos.x, pos.y, pos.z); vels.push((Math.random()-0.5)*4, Math.random()*5, (Math.random()-0.5)*4); }
-    geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    const mat = new THREE.PointsMaterial({ color: 0xffaa00, size: 0.2, transparent: true, opacity: 1 });
-    const sys = new THREE.Points(geom, mat);
-    sys.userData = { vels, time: Date.now() };
-    scene.add(sys);
-    particleSystems.push(sys);
-}
-
-function updateParticles(delta) {
-    for (let i = particleSystems.length - 1; i >= 0; i--) {
-        const sys = particleSystems[i];
-        if (Date.now() - sys.userData.time > 500) { scene.remove(sys); particleSystems.splice(i, 1); continue; }
-        const attr = sys.geometry.attributes.position;
-        const v = sys.userData.vels;
-        for (let j = 0; j < attr.count; j++) attr.setXYZ(j, attr.getX(j)+v[j*3]*delta, attr.getY(j)+v[j*3+1]*delta-9.8*delta, attr.getZ(j)+v[j*3+2]*delta);
-        attr.needsUpdate = true;
-        sys.material.opacity -= delta;
-    }
 }
 
 // ==================== HUD ====================
@@ -482,7 +402,7 @@ function updateHUD() {
     document.getElementById('hud-money').textContent = '$' + money;
     document.getElementById('hud-hp').textContent = playerHP + ' HP';
     if (currentSlot === 4) document.getElementById('hud-weapon').textContent = 'GRANADA [' + selectedGrenadeType + ']';
-    else if (currentSlot === 5) document.getElementById('hud-weapon').textContent = hasBomb ? 'C4 [DISPONIVEL]' : 'C4 [PLANTADA]';
+    else if (currentSlot === 5) document.getElementById('hud-weapon').textContent = hasBomb ? 'C4 [DISP]' : 'C4 [PLANT]';
     else if (currentWeapon) document.getElementById('hud-weapon').textContent = currentWeapon.name + ' [' + currentWeapon.ammo + '/' + currentWeapon.reserveAmmo + ']';
     updateHealthBars(); updateWeaponSlots(); updateGrenadeIndicator();
 }
@@ -511,22 +431,6 @@ function updateWeaponSlots() {
 function updateGrenadeIndicator() {
     const spans = document.querySelectorAll('#grenade-indicator span');
     if (spans.length >= 3) { spans[0].textContent = 'HE: ' + playerGrenades.HE; spans[1].textContent = 'FLASH: ' + playerGrenades.FLASH; spans[2].textContent = 'SMOKE: ' + playerGrenades.SMOKE; }
-}
-
-function updateRanking() {
-    const list = document.getElementById('ranking-list');
-    if (!list) return;
-    const rankings = [{ name: currentPlayer?.name || 'VOCE', kills: playerStats.kills, you: true }];
-    bots.forEach(b => rankings.push({ name: b.userData.name, kills: Math.floor(Math.random()*15), you: false }));
-    rankings.sort((a,b) => b.kills - a.kills);
-    list.innerHTML = rankings.slice(0,8).map((r,i) => '<div class="rank-item'+(r.you?' you':'')+'"><span>'+(i+1)+'. '+r.name+'</span><span>'+r.kills+'</span></div>').join('');
-}
-
-function toggleRanking() {
-    const list = document.getElementById('ranking-list');
-    const btn = document.querySelector('#ranking-header button');
-    if (list.style.display === 'none') { list.style.display = 'block'; if(btn) btn.textContent = '-'; }
-    else { list.style.display = 'none'; if(btn) btn.textContent = '+'; }
 }
 
 // ==================== CHAT ====================
@@ -575,25 +479,14 @@ function processCommand(msg) {
     const args = parts.slice(1);
     if (!adminMode) return;
     switch(cmd) {
-        case 'god': godMode = !godMode; addAdminLog('/god '+(godMode?'ON':'OFF')); break;
+        case 'god': godMode = !godMode; break;
         case 'fly': isFlyMode = !isFlyMode; break;
-        case 'kick': if(args[0]){const b=bots.find(b=>b.userData.name.toLowerCase()===args[0].toLowerCase());if(b){scene.remove(b);bots=bots.filter(b2=>b2!==b);}addAdminLog('/kick '+args[0]);} break;
-        case 'ban': if(args[0]&&args[1]){const d=args[1]==='perm'?0:parseInt(args[1]);bannedPlayers[args[0].toLowerCase()]={name:args[0],days:d,time:d>0?Date.now()+d*86400000:0};localStorage.setItem('dust2_banned',JSON.stringify(bannedPlayers));addAdminLog('/ban '+args[0]+' '+args[1]);addChatMessage('SISTEMA',args[0]+' banido','system');} break;
-        case 'unban': if(args[0]){delete bannedPlayers[args[0].toLowerCase()];localStorage.setItem('dust2_banned',JSON.stringify(bannedPlayers));addAdminLog('/unban '+args[0]);} break;
-        case 'give': if(args[0]==='money') money+=parseInt(args[1])||1000; if(args[0]==='hp') playerHP=Math.min(playerHP+50,100); if(args[0]==='ak47'){weaponSlots[1]={name:"AK-47",damage:35,recoil:0.05,fireRate:120,type:"Rifle",ammo:30,maxAmmo:30,reserveAmmo:90,reloadTime:2500};currentWeapon=weaponSlots[1];currentSlot=1;} if(args[0]==='awp'){weaponSlots[1]={name:"AWP",damage:115,recoil:0.20,fireRate:1000,type:"Sniper",ammo:10,maxAmmo:10,reserveAmmo:30,reloadTime:3000};currentWeapon=weaponSlots[1];currentSlot=1;} addAdminLog('/give '+args.join(' ')); break;
-        case 'zumbi': case 'zombie': bots.forEach(b=>{b.userData.health=200;b.children.forEach(c=>{if(c.material&&c.material.color)c.material.color.setHex(0x00ff00);});});addChatMessage('SISTEMA','Modo Zumbi ativado','system');addAdminLog('/zumbi');break;
-        case 'wall': wallhackActive=!wallhackActive;mapColliders.forEach(c=>{if(c.material){c.material.transparent=wallhackActive;c.material.opacity=wallhackActive?0.15:1;}});addAdminLog('/wall '+(wallhackActive?'ON':'OFF'));break;
-        case 'dance': bots.forEach(b=>{const o=b.position.y;let j=0;const int=setInterval(()=>{if(j>=5){clearInterval(int);b.position.y=o;return;}b.position.y=o+Math.abs(Math.sin(j*2))*2;j++;},200);});addAdminLog('/dance');break;
-        case 'admin': if(args[0]==='criar'&&currentPlayer?.type==='dev'){const adm=JSON.parse(localStorage.getItem('dust2_admins')||'{}');adm[args[1].toLowerCase()]={name:args[1],password:args[2],expires:args[3]?Date.now()+parseInt(args[3])*86400000:0};localStorage.setItem('dust2_admins',JSON.stringify(adm));addChatMessage('SISTEMA','Admin '+args[1]+' criado','system');addAdminLog('/admin criar '+args[1]);} break;
-        case 'help': addChatMessage('COMANDOS','god fly kick ban give zumbi wall dance','system'); break;
+        case 'kick': if(args[0]){const b=bots.find(b=>b.userData.name.toLowerCase()===args[0].toLowerCase());if(b){scene.remove(b);bots=bots.filter(b2=>b2!==b);}} break;
+        case 'ban': if(args[0]&&args[1]){const d=args[1]==='perm'?0:parseInt(args[1]);bannedPlayers[args[0].toLowerCase()]={name:args[0],days:d,time:d>0?Date.now()+d*86400000:0};localStorage.setItem('dust2_banned',JSON.stringify(bannedPlayers));addChatMessage('SISTEMA',args[0]+' banido','system');} break;
+        case 'give': if(args[0]==='money') money+=parseInt(args[1])||1000; if(args[0]==='hp') playerHP=Math.min(playerHP+50,100); updateHUD(); break;
+        case 'help': addChatMessage('COMANDOS','god fly kick ban give','system'); break;
     }
     updateHUD();
-}
-
-function addAdminLog(action) {
-    adminLogs.push({time:new Date().toLocaleTimeString(),action:action});
-    const c=document.getElementById('log-content');
-    if(c)c.innerHTML=adminLogs.slice(-30).map(l=>'<div>'+l.time+' - '+l.action+'</div>').join('');
 }
 
 // ==================== BOMBA ====================
@@ -606,11 +499,10 @@ function plantBomb() {
 }
 function explodeBomb(){bombPlanted=false;playSound('explode');scoreT++;document.getElementById('score-t').textContent=scoreT;addKillFeed("BOMBA EXPLODIU","TR VENCE");setTimeout(()=>nextRound(),3000);}
 function checkRoundEnd(){if(bots.length===0){if(bombTimer)clearInterval(bombTimer);scoreCT++;document.getElementById('score-ct').textContent=scoreCT;addKillFeed("TODOS ELIMINADOS","CT VENCE");setTimeout(()=>nextRound(),3000);}}
-function nextRound(){bombPlanted=false;hasBomb=true;weaponSlots[5].hasBomb=true;round++;document.getElementById('hud-round').textContent=round;camera.position.copy(CHECKPOINTS.TR_SPAWN);createBots();money+=3200;playerHP=100;playerArmor=0;isDead=false;killStreak=0;if(currentWeapon&&currentSlot<=3)currentWeapon.ammo=currentWeapon.maxAmmo;updateHUD();startFreezeTime();}
+function nextRound(){bombPlanted=false;hasBomb=true;weaponSlots[5].hasBomb=true;round++;document.getElementById('hud-round').textContent=round;camera.position.copy(CHECKPOINTS.TR_SPAWN);createBots();money+=3200;playerHP=100;playerArmor=0;isDead=false;if(currentWeapon&&currentSlot<=3)currentWeapon.ammo=currentWeapon.maxAmmo;updateHUD();startFreezeTime();}
 
 // ==================== MOVIMENTACAO ====================
 function onMouseDown(e){if(!isLocked||isChatOpen||isDead)return;if(e.button===0){e.preventDefault();if(!isReloading)shoot();}if(e.button===2){e.preventDefault();cycleGrenade();}if(e.button===1){e.preventDefault();throwGrenade(0.5);}}
-function onMouseUp(e){if(e.button===0&&isHoldingGrenade){e.preventDefault();releaseGrenade();}}
 function onKeyDown(e){
     if(e.key==='F12'){e.preventDefault();detectTamper();return;}
     if((e.key==='t'||e.key==='T')&&!isChatOpen&&currentPlayer?.type!=='guest'){e.preventDefault();toggleChat();return;}
@@ -628,33 +520,22 @@ function onKeyDown(e){
 function onKeyUp(e){switch(e.code){case'KeyW':moveForward=false;break;case'KeyA':moveLeft=false;break;case'KeyS':moveBackward=false;break;case'KeyD':moveRight=false;break;case'ShiftLeft':isWalkingSilently=false;break;}}
 function onResize(){camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);}
 function sendRadio(type){if(!radioEnabled||currentPlayer?.type==='guest')return;const msgs={gogo:'GO GO GO!',enemy:'INIMIGO AVISTADO!',help:'PRECISO DE AJUDA!'};addChatMessage(currentPlayer?.name||'Player',msgs[type],'radio');playSound('radio');}
-function switchWeapon(slot){if(isSwitchingWeapon||isDead||slot===currentSlot)return;isSwitchingWeapon=true;if(isReloading){isReloading=false;document.getElementById('reload-indicator').style.display='none';}setTimeout(()=>{currentSlot=slot;if(slot<=3)currentWeapon=weaponSlots[slot];else currentWeapon=null;sprayCounter=0;isSwitchingWeapon=false;updateHUD();playSound('beep');},200);}
+function switchWeapon(slot){if(isSwitchingWeapon||isDead||slot===currentSlot)return;isSwitchingWeapon=true;if(isReloading){isReloading=false;}setTimeout(()=>{currentSlot=slot;if(slot<=3)currentWeapon=weaponSlots[slot];else currentWeapon=null;isSwitchingWeapon=false;updateHUD();playSound('beep');},200);}
 function quickSwitch(){if(currentSlot>=4)switchWeapon(1);else switchWeapon(currentSlot===1?2:1);}
-function reloadWeapon(){if(isReloading||isDead||isSwitchingWeapon||currentSlot>=3)return;if(!currentWeapon||currentWeapon.ammo>=currentWeapon.maxAmmo)return;if(currentWeapon.reserveAmmo<=0)return;isReloading=true;document.getElementById('reload-indicator').style.display='block';setTimeout(()=>{const need=currentWeapon.maxAmmo-currentWeapon.ammo;const avail=Math.min(need,currentWeapon.reserveAmmo);currentWeapon.ammo+=avail;currentWeapon.reserveAmmo-=avail;isReloading=false;document.getElementById('reload-indicator').style.display='none';updateHUD();},currentWeapon.reloadTime||2500);}
-function cycleGrenade(){const types=['HE','FLASH','SMOKE','MOLOTOV'];const avail=types.filter(t=>playerGrenades[t]>0);if(avail.length===0)return;const idx=avail.indexOf(selectedGrenadeType);selectedGrenadeType=avail[(idx+1)%avail.length];updateGrenadeIndicator();}
-function releaseGrenade(){if(!isHoldingGrenade)return;isHoldingGrenade=false;if(grenadeThrowPower<0.1)grenadeThrowPower=0.1;throwGrenade(grenadeThrowPower);document.getElementById('grenade-power-indicator').style.display='none';}
+function reloadWeapon(){if(isReloading||isDead||isSwitchingWeapon||currentSlot>=3)return;if(!currentWeapon||currentWeapon.ammo>=currentWeapon.maxAmmo)return;if(currentWeapon.reserveAmmo<=0)return;isReloading=true;setTimeout(()=>{const need=currentWeapon.maxAmmo-currentWeapon.ammo;const avail=Math.min(need,currentWeapon.reserveAmmo);currentWeapon.ammo+=avail;currentWeapon.reserveAmmo-=avail;isReloading=false;updateHUD();},currentWeapon.reloadTime||2500);}
+function cycleGrenade(){const types=['HE','FLASH','SMOKE'];const avail=types.filter(t=>playerGrenades[t]>0);if(avail.length===0)return;const idx=avail.indexOf(selectedGrenadeType);selectedGrenadeType=avail[(idx+1)%avail.length];updateGrenadeIndicator();}
 
 // ==================== CONFIGS ====================
-function toggleSettings(){const p=document.getElementById('settings-panel');if(!p)return;p.style.display=p.style.display==='block'?'none':'block';}
-function showSettings(){document.getElementById('menu-screen').classList.remove('active');document.getElementById('game-screen').classList.add('active');document.getElementById('settings-panel').style.display='block';}
-
-// ==================== ADMIN ====================
-function toggleAdminPanel(){const p=document.getElementById('admin-panel');if(p)p.style.display=p.style.display==='block'?'none':'block';}
-function showAdminLog(){const l=document.getElementById('admin-log');if(l){l.style.display=l.style.display==='block'?'none':'block';updateAdminLogDisplay();}}
-function updateAdminLogDisplay(){const c=document.getElementById('log-content');if(c)c.innerHTML=adminLogs.slice(-30).map(l=>'<div>'+l.time+' - '+l.action+'</div>').join('');}
-function clearAdminLog(){adminLogs=[];updateAdminLogDisplay();}
-function showSecretChat(){const c=document.getElementById('secret-chat');if(c)c.style.display=c.style.display==='block'?'none':'block';}
-function sendSecretMessage(){const i=document.getElementById('secret-chat-input');const c=document.getElementById('secret-chat-content');if(i&&c&&i.value.trim()){const d=document.createElement('div');d.textContent='['+new Date().toLocaleTimeString()+'] '+i.value;c.appendChild(d);i.value='';}}
-function showCreateRoom(){document.getElementById('create-room-form').style.display='block';}
+function toggleSettings(){const p=document.getElementById('settings-panel');if(p)p.style.display=p.style.display==='block'?'none':'block';}
+function showSettings(){document.getElementById('menu-screen').classList.remove('active');document.getElementById('game-screen').classList.add('active');document.getElementById('settings-panel').style.display='block';controls.unlock();}
 function hideCreateRoom(){document.getElementById('create-room-form').style.display='none';}
+function showCreateRoom(){document.getElementById('create-room-form').style.display='block';}
 function createRoom(){showCreateRoom();}
-function confirmCreateRoom(){const code=document.getElementById('room-code-create').value.trim();const mode=document.getElementById('room-mode-create').value;const bots=document.getElementById('room-bots-create').value;if(code){sessionStorage.setItem('roomCode',code);sessionStorage.setItem('gameMode',mode);sessionStorage.setItem('botCount',bots);addChatMessage('SISTEMA','Sala '+code+' criada','system');addAdminLog('Sala: '+code);}hideCreateRoom();startGame();}
+function confirmCreateRoom(){const code=document.getElementById('room-code-create').value.trim();const mode=document.getElementById('room-mode-create').value;const bots=document.getElementById('room-bots-create').value;if(code){sessionStorage.setItem('roomCode',code);sessionStorage.setItem('gameMode',mode);sessionStorage.setItem('botCount',bots);addChatMessage('SISTEMA','Sala '+code+' criada','system');}hideCreateRoom();startGame();}
 function joinRoom(){const code=prompt('CODIGO DA SALA:');if(code){sessionStorage.setItem('roomCode',code);startGame();}}
-function showProfile(){alert('Kills: '+playerStats.kills+'\nDeaths: '+playerStats.deaths+'\nHeadshots: '+playerStats.headshots);}
-function showBotsMenu(){const c=prompt('QUANTOS BOTS?','5');if(c){sessionStorage.setItem('botCount',c);}}
+function showBotsMenu(){const c=prompt('QUANTOS BOTS?','5');if(c)sessionStorage.setItem('botCount',c);}
 function showBanMenu(){const list=Object.values(bannedPlayers).map(b=>b.name).join('\n');alert('BANIDOS:\n'+(list||'NENHUM'));}
 function showAdminsMenu(){const adm=JSON.parse(localStorage.getItem('dust2_admins')||'{}');const list=Object.values(adm).map(a=>a.name).join('\n');alert('ADMINS:\n'+(list||'NENHUM'));}
-function showStats(){const users=JSON.parse(localStorage.getItem('dust2_users')||'{}');alert('JOGADORES: '+Object.keys(users).length);}
 
 // ==================== LOGIN ====================
 function switchTab(tab){
@@ -662,7 +543,6 @@ function switchTab(tab){
     event.target.classList.add('active');
     document.getElementById('player-form').style.display=tab==='player'?'flex':'none';
     document.getElementById('guest-form').style.display=tab==='guest'?'flex':'none';
-    document.getElementById('admin-form').style.display=tab==='admin'?'flex':'none';
 }
 function showRegister(){document.getElementById('login-step-1').style.display='none';document.getElementById('register-step').style.display='block';}
 function showLogin(){document.getElementById('login-step-1').style.display='block';document.getElementById('register-step').style.display='none';document.getElementById('verify-step').style.display='none';document.getElementById('forgot-step').style.display='none';}
@@ -696,8 +576,7 @@ function verifyEmail(){
     users[pending.name.toLowerCase()]={name:pending.name,email:pending.email,password:btoa(pending.pass),createdAt:Date.now()};
     localStorage.setItem('dust2_users',JSON.stringify(users));
     sessionStorage.removeItem('pending');
-    showSuccess('CONTA CRIADA!');
-    setTimeout(showLogin,1500);
+    showSuccess('CONTA CRIADA!');setTimeout(showLogin,1500);
 }
 function loginPlayer(){
     const email=document.getElementById('player-email').value.trim();
@@ -709,13 +588,13 @@ function loginPlayer(){
     if(btoa(pass)!==user.password&&pass!==user.password){showError('SENHA INCORRETA');return;}
     if(bannedPlayers[user.name.toLowerCase()]){const ban=bannedPlayers[user.name.toLowerCase()];if(ban.days===0||Date.now()<ban.time){showError('CONTA BANIDA');return;}}
     currentPlayer={name:user.name,email:user.email,type:'player'};
-    playerStats={kills:0,deaths:0,headshots:0,knifes:0,bombsPlanted:0,bombsDefused:0,mvps:0};
+    playerStats={kills:0,deaths:0,headshots:0,bombsPlanted:0,mvps:0};
     showMenu('player');
 }
 function loginGuest(){
     const names=['Convidado_Alpha','Convidado_Bravo','Convidado_Charlie'];
     currentPlayer={name:names[Math.floor(Math.random()*3)]+'_'+Math.floor(Math.random()*100),type:'guest'};
-    playerStats={kills:0,deaths:0,headshots:0,knifes:0,bombsPlanted:0,bombsDefused:0,mvps:0};
+    playerStats={kills:0,deaths:0,headshots:0,bombsPlanted:0,mvps:0};
     showMenu('guest');
 }
 function loginAdmin(){
@@ -727,7 +606,7 @@ function loginAdmin(){
     showError('SENHA INCORRETA');
 }
 function forgotPassword(){const email=document.getElementById('forgot-email').value.trim();if(!email){showError('DIGITE SEU EMAIL');return;}const code=Math.floor(100000+Math.random()*900000).toString();sessionStorage.setItem('resetCode',code);sessionStorage.setItem('resetEmail',email);console.log('CODIGO RECUPERACAO: '+code);document.getElementById('reset-section').style.display='block';showSuccess('CODIGO ENVIADO (VER CONSOLE)');}
-function resetPassword(){const code=document.getElementById('reset-code').value.trim();const pass=document.getElementById('reset-password').value;const sc=sessionStorage.getItem('resetCode');const se=sessionStorage.getItem('resetEmail');if(code!==sc){showError('CODIGO INCORRETO');return;}if(!pass||pass.length<6){showError('SENHA MINIMO 6');return;}const users=JSON.parse(localStorage.getItem('dust2_users')||'{}');const key=Object.keys(users).find(k=>users[k].email===se);if(key){users[key].password=btoa(pass);localStorage.setItem('dust2_users',JSON.stringify(users));showSuccess('SENHA ALTERADA!');setTimeout(showLogin,1500);}}
+function resetPassword(){const code=document.getElementById('reset-code').value.trim();const pass=document.getElementById('reset-password').value;if(code!==sessionStorage.getItem('resetCode')){showError('CODIGO INCORRETO');return;}if(!pass||pass.length<6){showError('SENHA MINIMO 6');return;}const users=JSON.parse(localStorage.getItem('dust2_users')||'{}');const key=Object.keys(users).find(k=>users[k].email===sessionStorage.getItem('resetEmail'));if(key){users[key].password=btoa(pass);localStorage.setItem('dust2_users',JSON.stringify(users));showSuccess('SENHA ALTERADA!');setTimeout(showLogin,1500);}}
 
 function showMenu(type){
     document.getElementById('login-screen').classList.remove('active');
@@ -736,19 +615,19 @@ function showMenu(type){
     document.getElementById('player-menu').style.display=type==='player'?'block':'none';
     document.getElementById('guest-menu').style.display=type==='guest'?'block':'none';
     if(type==='admin'||type==='dev')document.getElementById('admin-name-display').textContent=currentPlayer.name;
-    if(type==='player'){document.getElementById('player-name-display').textContent=currentPlayer.name;document.getElementById('player-rank-display').textContent='TROFEU PRATA I';}
+    if(type==='player'){document.getElementById('player-name-display').textContent=currentPlayer.name;}
     if(type==='guest')document.getElementById('guest-name-display').textContent=currentPlayer.name;
 }
-function logout(){currentPlayer=null;adminMode=false;isLocked=false;document.getElementById('menu-screen').classList.remove('active');document.getElementById('game-screen').classList.remove('active');document.getElementById('login-screen').classList.add('active');document.getElementById('admin-form').style.display='none';document.getElementById('player-form').style.display='flex';document.getElementById('guest-form').style.display='none';document.getElementById('login-step-1').style.display='block';document.getElementById('register-step').style.display='none';document.getElementById('admin-password').value='';document.getElementById('player-email').value='';document.getElementById('player-password').value='';showLogin();}
+function logout(){currentPlayer=null;adminMode=false;isLocked=false;document.getElementById('menu-screen').classList.remove('active');document.getElementById('game-screen').classList.remove('active');document.getElementById('login-screen').classList.add('active');document.getElementById('admin-secret').style.display='none';document.getElementById('player-form').style.display='flex';document.getElementById('guest-form').style.display='none';document.getElementById('login-step-1').style.display='block';document.getElementById('register-step').style.display='none';document.getElementById('admin-password').value='';document.getElementById('player-email').value='';document.getElementById('player-password').value='';logoClickCount=0;showLogin();}
 function startGame(){document.getElementById('menu-screen').classList.remove('active');document.getElementById('game-screen').classList.add('active');if(!scene){init();}else{camera.position.copy(CHECKPOINTS.TR_SPAWN);createBots();money=1600;playerHP=100;playerArmor=0;isDead=false;round=1;scoreT=0;scoreCT=0;bombPlanted=false;hasBomb=true;updateHUD();startFreezeTime();}document.getElementById('crosshair').style.display='none';}
 
 // ==================== COMPRAS ====================
 function toggleBuyMenu(){const m=document.getElementById('buy-menu');if(m)m.style.display=m.style.display==='block'?'none':'block';}
-function createBuyMenu(){const m=document.getElementById('buy-menu');if(!m)return;let h='<h3>MERCADO (B para fechar)</h3>';for(const cat in weaponShop){h+='<b>'+cat.toUpperCase()+'</b><br>';weaponShop[cat].forEach(i=>{h+='<button onclick="buyItem(\''+i.name+'\','+i.price+',\''+cat+'\')">'+i.name+' $'+i.price+'</button>';});h+='<br><br>';}m.innerHTML=h;}
+function createBuyMenu(){const m=document.getElementById('buy-menu');if(!m)return;let h='<h3>MERCADO (B)</h3>';for(const cat in weaponShop){h+='<b>'+cat.toUpperCase()+'</b><br>';weaponShop[cat].forEach(i=>{h+='<button onclick="buyItem(\''+i.name+'\','+i.price+',\''+cat+'\')">'+i.name+' $'+i.price+'</button> ';});h+='<br><br>';}m.innerHTML=h;}
 function buyItem(name,price,category){if(money<price){addKillFeed("SEM DINHEIRO","");return;}money-=price;const item=weaponShop[category].find(i=>i.name===name);if(!item)return;if(item.type==='Pistol'){weaponSlots[2]={...item};if(currentSlot===2)currentWeapon=weaponSlots[2];}else if(item.name==='Faca'){weaponSlots[3]={...item};}else if(item.type==='Grenade'){if(item.name.includes('HE'))playerGrenades.HE=Math.min(playerGrenades.HE+1,5);if(item.name.includes('Flash'))playerGrenades.FLASH=Math.min(playerGrenades.FLASH+1,3);if(item.name.includes('Smoke'))playerGrenades.SMOKE=Math.min(playerGrenades.SMOKE+1,3);}else if(item.name==='Colete'){playerArmor=100;}else if(item.name==='Capacete'){hasHelmet=true;}else{weaponSlots[1]={...item};if(currentSlot===1||!currentWeapon){currentWeapon=weaponSlots[1];currentSlot=1;}}updateHUD();}
 
 // ==================== ANTI-TRAPACA ====================
-function detectTamper(){tamperAttempts++;if(currentPlayer&&currentPlayer.type!=='dev'){if(tamperAttempts>=3){bannedPlayers[currentPlayer.name.toLowerCase()]={name:currentPlayer.name,days:31,time:Date.now()+31*86400000};localStorage.setItem('dust2_banned',JSON.stringify(bannedPlayers));alert('BANIDO POR 31 DIAS');logout();}}}
+function detectTamper(){tamperAttempts++;if(currentPlayer&&currentPlayer.type!=='dev'){if(tamperAttempts>=3){bannedPlayers[currentPlayer.name.toLowerCase()]={name:currentPlayer.name,days:31,time:Date.now()+31*86400000};localStorage.setItem('dust2_banned',JSON.stringify(bannedPlayers));alert('BANIDO POR 31 DIAS - TRAPACA DETECTADA');logout();}}}
 
 // ==================== FREEZE TIME ====================
 function startFreezeTime(){isFrozen=true;addKillFeed("FREEZE TIME","COMPRE ARMAS");setTimeout(()=>{isFrozen=false;addKillFeed("VALENDO","");},5000);}
@@ -759,8 +638,9 @@ function animate(){
     const time=performance.now();
     const delta=Math.min((time-prevTime)/1000,0.1);
     prevTime=time;
-    updateParticles(delta);
+    
     grenades=grenades.filter(g=>g.update());
+    
     if(!isDead&&isLocked){
         velocity.x-=velocity.x*10*delta;
         velocity.z-=velocity.z*10*delta;
@@ -773,12 +653,14 @@ function animate(){
         if(isFlyMode){camera.position.y+=velocity.y*delta;}else{controls.getObject().position.y+=velocity.y*delta;}
         if(!isFlyMode){const ray=new THREE.Raycaster(oldPos,direction,0,3);const hits=ray.intersectObjects(mapColliders,true);if(hits.length>0){camera.position.x=oldPos.x;camera.position.z=oldPos.z;}if(controls.getObject().position.y<14){velocity.y=0;controls.getObject().position.y=14;canJump=true;}}
     }
+    
     botAI();
     if(camera.rotation.x<0)camera.rotation.x*=0.9;
-    updateRanking();
+    
     const debug=document.getElementById('pos-debug');
     if(debug)debug.textContent='X:'+camera.position.x.toFixed(1)+' Y:'+camera.position.y.toFixed(1)+' Z:'+camera.position.z.toFixed(1);
+    
     renderer.render(scene,camera);
 }
 
-console.log('DUST 2 FPS CARREGADO | Senha Dev: BiteloeOlina');
+console.log('DUST 2 FPS CARREGADO | Senha Dev: BiteloeOlina | 7 cliques no logo');
