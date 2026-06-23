@@ -67,13 +67,22 @@ let currentPlayer = null;
 let logoClickCount = 0;
 let playerStats = { kills: 0, deaths: 0, headshots: 0, bombsPlanted: 0, mvps: 0 };
 
-// ==================== COORDENADAS CORRIGIDAS ====================
+// ==================== COORDENADAS CORRIGIDAS (THREE.JS) ====================
+// Escala recomendada: 1 unidade no Three.js = aprox. 100 unidades da Source Engine
 const CHECKPOINTS = {
-    TR_SPAWN: new THREE.Vector3(0, 16, -35),
-    CT_SPAWN: new THREE.Vector3(0, 16, 35),
-    BOMB_A: new THREE.Vector3(10, 14, 0),
-    BOMB_B: new THREE.Vector3(-10, 14, 0)
+    // Base TR fica na extremidade oposta e levemente inclinada
+    TR_SPAWN: new THREE.Vector3(-12.0, 10.0, -45.0),
+    
+    // Base CT fica bem abaixo do Bombsite A (Y menor) e recuada
+    CT_SPAWN: new THREE.Vector3(15.0, 2.0, 30.0),
+    
+    // Bomb A é a área mais alta do mapa (Y elevado) e fica no lado direito (X positivo)
+    BOMB_A: new THREE.Vector3(32.0, 14.0, 15.0),
+    
+    // Bomb B fica no lado esquerdo (X negativo), mais isolado e plano em relação ao meio
+    BOMB_B: new THREE.Vector3(-35.0, 8.0, 8.0)
 };
+
 
 // ==================== ARSENAL ====================
 const weaponShop = {
